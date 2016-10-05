@@ -5,7 +5,7 @@ setup(
     version="0.1dev",
     description="Panoply Data Source for Mandrill API",
     author="Oshri Bienhaker",
-    url="http://panoply.io"
-    pacakge_dir={"panoply": ""},
+    url="http://panoply.io",
+    package_dir={"panoply": ""},
     packages=["panoply.mandrill"]
 )
