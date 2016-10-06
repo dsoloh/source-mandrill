@@ -2,9 +2,10 @@
 import unittest
 import urllib2
 import json
+import io
+
 from mock import MagicMock
 from mandrill import common, Mandrill, MandrillError
-import io
 
 OPTIONS = {
     "logger": lambda *args: None # don't log on test 

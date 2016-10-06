@@ -1,10 +1,10 @@
-import time
 import panoply
-import copy
-import urllib
 import urllib2
-import json
+import urllib
 import common
+import copy
+import time
+import json
 
 MINUTE = 60
 HOUR = 60 * MINUTE
