@@ -4,13 +4,13 @@ import copy
 import urllib
 import urllib2
 import json
-from common import metrics
+import common
 
 MINUTE = 60
 HOUR = 60 * MINUTE
 DAY = 24 * HOUR
-BASE_URL = "https://mandrillapp.com/api/1.0/"
-DAY_RANGE = 30; # The range of days to import data from
+BASE_URL = common.BASE_URL
+DAY_RANGE = common.DAY_RANGE
 
 class Mandrill(panoply.DataSource):
 
@@ -19,7 +19,7 @@ class Mandrill(panoply.DataSource):
         fromsec = int(time.time() - (DAY_RANGE * DAY))
         self._from = time.strftime("%Y-%m-%d", time.gmtime(fromsec))
         self._to = time.strftime("%Y-%m-%d", time.gmtime())
-        self._metrics = copy.deepcopy( metrics )
+        self._metrics = copy.deepcopy( common.metrics )
         self._total = len( self._metrics )
         self._key = source["key"]
 
@@ -27,7 +27,6 @@ class Mandrill(panoply.DataSource):
     def read(self, n = None):
         if len(self._metrics) == 0:
             return None # No more data to consume
-
         metric = self._metrics[0]
         url = BASE_URL + metric["path"]
         body = {
@@ -35,11 +34,9 @@ class Mandrill(panoply.DataSource):
             "date_from": self._from,
             "date_to": self._to
         }
-
         # initiate the required item list for the given metric
         if "required" in metric and not "requiredList" in metric:
             totalItems = self._setRequired(metric)
-
             # if no required items was found continue to the next metric
             if totalItems == 0:
                 self._metrics.pop(0)
@@ -47,7 +44,6 @@ class Mandrill(panoply.DataSource):
 
 
         requiredList = metric.get("requiredList", [])
-
         if len(requiredList) > 0:
             requiredName = metric["required"]
             requiredItem = requiredList[0]
@@ -56,7 +52,7 @@ class Mandrill(panoply.DataSource):
         result = self._request( url, body )
         # add the result type for each row
         for row in result:
-            row.type = metric["name"]
+            row["type"] = metric["name"]
 
         # if it wasn't the last required item just pop it from the metric
         # required list
@@ -83,7 +79,6 @@ class Mandrill(panoply.DataSource):
         result = self._request(url, body)
         requiredName = metric["required"]
         metric["requiredList"] = map(lambda row: row[requiredName], result)
-
         return len(result)
 
 
