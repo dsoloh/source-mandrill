@@ -4,7 +4,7 @@ import json
 
 from io import BytesIO
 from mock import MagicMock
-from mandrill import conf, Mandrill, MandrillError
+from mandrill import *
 
 OPTIONS = {
     "logger": lambda *args: None # don't log on test 
@@ -145,7 +145,7 @@ class TestMandrill(unittest.TestCase):
         self.assertEqual(mock.call_count, 3)
         req3, body3 = args[2][0]
         body3 = json.loads(body3)
-        self.assertEqual( body3.get("type"), "id2")
+        self.assertEqual(body3.get("type"), "id2")
 
         # make sure we done
         isNone = stream.read()
