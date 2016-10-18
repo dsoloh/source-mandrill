@@ -1,6 +1,6 @@
 BASE_URL = "https://mandrillapp.com/api/1.0/"
 
-DAY_RANGE = 30; # The range of days to import data from
+DAY_RANGE = 30 # The range of days to import data from
 
 metrics = [
     {
