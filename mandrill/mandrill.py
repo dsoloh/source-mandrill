@@ -18,8 +18,8 @@ class Mandrill(panoply.DataSource):
         fromsec = int(time.time() - (DAY_RANGE * DAY))
         self._from = time.strftime("%Y-%m-%d", time.gmtime(fromsec))
         self._to = time.strftime("%Y-%m-%d", time.gmtime())
-        self._metrics = copy.deepcopy( conf.metrics )
-        self._total = len( self._metrics )
+        self._metrics = copy.deepcopy(conf.metrics)
+        self._total = len(self._metrics)
         self._key = source["key"]
 
 
@@ -37,7 +37,7 @@ class Mandrill(panoply.DataSource):
         if "required" in metric and "requiredList" not in metric:
             metric["requiredList"] = self._getRequireds(metric)
             # if no required items were found continue to the next metric
-            if not len( metric["requiredList"] ):
+            if not len(metric["requiredList"]):
                 self._metrics.pop(0)
                 return self.read()
 
@@ -46,9 +46,9 @@ class Mandrill(panoply.DataSource):
         if len(requiredList):
             requiredName = metric["required"]
             requiredItem = requiredList[0]
-            body[ requiredName ] = requiredItem
+            body[requiredName] = requiredItem
 
-        result = self._request( url, body )
+        result = self._request(url, body)
         # add the result type for each row
         for row in result:
             row["type"] = metric["name"]
@@ -77,11 +77,11 @@ class Mandrill(panoply.DataSource):
 
         result = self._request(url, body)
         requiredName = metric["required"]
-        return map(lambda row: row[requiredName], result)
+        return [row.get(requiredName) for row in result]
 
     def _request(self, url, body):
         req = urllib2.Request(url)
-        data = json.dumps( body )
+        data = json.dumps(body)
         req.add_header("Content-Type", "application/json")
 
         self.log("POST", url)

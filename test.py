@@ -10,13 +10,15 @@ OPTIONS = {
     "logger": lambda *args: None # don't log on test 
 }
 
-orig_metrics = conf.metrics
-orig_urlopen = urllib2.urlopen
 class TestMandrill(unittest.TestCase):
 
+    def setUp(self):
+        self.orig_metrics = conf.metrics
+        self.orig_urlopen = urllib2.urlopen
+
     def tearDown(self):
-        conf.metrics = orig_metrics
-        urllib2.urlopen = orig_urlopen
+        conf.metrics = self.orig_metrics
+        urllib2.urlopen = self.orig_urlopen
 
     def test_simple_request(self):
         conf.metrics = [{ 
