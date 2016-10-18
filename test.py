@@ -2,8 +2,8 @@
 import unittest
 import urllib2
 import json
-import io
 
+from io import BytesIO
 from mock import MagicMock
 from mandrill import common, Mandrill, MandrillError
 
@@ -24,7 +24,7 @@ class TestMandrill(unittest.TestCase):
             "name":"metric",
             "path": "metric.json"
         }]
-        res = io.BytesIO("[]")
+        res = BytesIO("[]")
         urllib2.urlopen = MagicMock(return_value=res)
         
         Mandrill({
@@ -44,7 +44,7 @@ class TestMandrill(unittest.TestCase):
             "path":"metric.json"
         }]
 
-        urlRes = io.BytesIO(json.dumps([{"key":"val"}]))
+        urlRes = BytesIO(json.dumps([{"key":"val"}]))
         urllib2.urlopen = MagicMock(return_value=urlRes)
         
         stream = Mandrill({
@@ -66,7 +66,7 @@ class TestMandrill(unittest.TestCase):
             }
 
         ]
-        res1, res2 = io.BytesIO("[]"), io.BytesIO("[]")
+        res1, res2 = BytesIO("[]"), BytesIO("[]")
         urllib2.urlopen = MagicMock(side_effect=[res1, res2])
 
         stream = Mandrill({
@@ -85,7 +85,7 @@ class TestMandrill(unittest.TestCase):
             "name":"metric",
             "path":"metric.json"
         }]
-        res = io.BytesIO(json.dumps({
+        res = BytesIO(json.dumps({
             "status":"error",
             "code": -1,
             "name":"invalid_key",
@@ -111,12 +111,12 @@ class TestMandrill(unittest.TestCase):
             "listpath":"metric/list.json"
         }]
 
-        res1 = io.BytesIO(json.dumps([
+        res1 = BytesIO(json.dumps([
             {"type":"id1"},
             {"type":"id2"}
         ]))
-        res2 = io.BytesIO("[]")
-        res3 = io.BytesIO("[]")
+        res2 = BytesIO("[]")
+        res3 = BytesIO("[]")
 
         mock = MagicMock();
         mock.side_effect = [res1, res2, res3]

@@ -36,7 +36,7 @@ class Mandrill(panoply.DataSource):
         # initiate the required item list for the given metric
         if "required" in metric and "requiredList" not in metric:
             metric["requiredList"] = self._getRequireds(metric)
-            # if no required items was found continue to the next metric
+            # if no required items were found continue to the next metric
             if not len( metric["requiredList"] ):
                 self._metrics.pop(0)
                 return self.read()
