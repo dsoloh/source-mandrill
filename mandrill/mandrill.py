@@ -1,6 +1,5 @@
 import panoply
 import urllib2
-import urllib
 import common
 import copy
 import time
@@ -35,10 +34,10 @@ class Mandrill(panoply.DataSource):
             "date_to": self._to
         }
         # initiate the required item list for the given metric
-        if "required" in metric and not "requiredList" in metric:
-            totalItems = self._setRequired(metric)
+        if "required" in metric and "requiredList" not in metric:
+            metric["requiredList"] = self._getRequireds(metric)
             # if no required items was found continue to the next metric
-            if totalItems == 0:
+            if not len( metric["requiredList"] ):
                 self._metrics.pop(0)
                 return self.read()
 
@@ -68,9 +67,9 @@ class Mandrill(panoply.DataSource):
             self.progress(loaded, self._total, msg)
         return result
 
-    # set the required items for the given metrics and 
+    # get the required items for the given metrics and 
     # return the number for items found
-    def _setRequired(self, metric):
+    def _getRequireds(self, metric):
         url = BASE_URL + metric["listpath"]
         body = {
             "key": self._key
@@ -78,9 +77,7 @@ class Mandrill(panoply.DataSource):
 
         result = self._request(url, body)
         requiredName = metric["required"]
-        metric["requiredList"] = map(lambda row: row[requiredName], result)
-        return len(result)
-
+        return map(lambda row: row[requiredName], result)
 
     def _request(self, url, body):
         req = urllib2.Request(url)
@@ -101,7 +98,7 @@ class Mandrill(panoply.DataSource):
 
 class MandrillError(Exception):
 
-    # Transform the generic urllib.HTTPError to more descriptive exception
+    # Transform the generic urllib2.HTTPError to more descriptive exception
     # based on the JSON error description provide by mandrill API
     @classmethod
     def from_http_error(cls, err):
