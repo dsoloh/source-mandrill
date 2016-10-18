@@ -1,4 +1,4 @@
-from mandrill import Mandrill
+from mandrill import *
 
 Stream = Mandrill
 

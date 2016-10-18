@@ -1,6 +1,6 @@
 import panoply
 import urllib2
-import common
+import conf
 import copy
 import time
 import json
@@ -8,8 +8,8 @@ import json
 MINUTE = 60
 HOUR = 60 * MINUTE
 DAY = 24 * HOUR
-BASE_URL = common.BASE_URL
-DAY_RANGE = common.DAY_RANGE
+BASE_URL = conf.BASE_URL
+DAY_RANGE = conf.DAY_RANGE
 
 class Mandrill(panoply.DataSource):
 
@@ -18,7 +18,7 @@ class Mandrill(panoply.DataSource):
         fromsec = int(time.time() - (DAY_RANGE * DAY))
         self._from = time.strftime("%Y-%m-%d", time.gmtime(fromsec))
         self._to = time.strftime("%Y-%m-%d", time.gmtime())
-        self._metrics = copy.deepcopy( common.metrics )
+        self._metrics = copy.deepcopy( conf.metrics )
         self._total = len( self._metrics )
         self._key = source["key"]
 

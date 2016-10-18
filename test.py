@@ -1,26 +1,25 @@
-
 import unittest
 import urllib2
 import json
 
 from io import BytesIO
 from mock import MagicMock
-from mandrill import common, Mandrill, MandrillError
+from mandrill import conf, Mandrill, MandrillError
 
 OPTIONS = {
     "logger": lambda *args: None # don't log on test 
 }
 
-orig_metrics = common.metrics
+orig_metrics = conf.metrics
 orig_urlopen = urllib2.urlopen
 class TestMandrill(unittest.TestCase):
 
     def tearDown(self):
-        common.metrics = orig_metrics
+        conf.metrics = orig_metrics
         urllib2.urlopen = orig_urlopen
 
     def test_simple_request(self):
-        common.metrics = [{ 
+        conf.metrics = [{ 
             "name":"metric",
             "path": "metric.json"
         }]
@@ -33,13 +32,13 @@ class TestMandrill(unittest.TestCase):
         
         req, body = urllib2.urlopen.call_args[0]
         body = json.loads(body)
-        url = common.BASE_URL + "metric.json"
+        url = conf.BASE_URL + "metric.json"
         
         self.assertEqual(req.get_full_url(), url)
         self.assertEqual(body.get("key"), "MandrillKey")
 
     def test_result(self):
-        common.metrics = [{
+        conf.metrics = [{
             "name":"metric",
             "path":"metric.json"
         }]
@@ -55,7 +54,7 @@ class TestMandrill(unittest.TestCase):
         self.assertEqual(result.get("key"), "val")
 
     def test_iterate_metrics(self):
-        common.metrics = [
+        conf.metrics = [
             {
                 "name":"metric1",
                 "path":"metric1.json"
@@ -81,7 +80,7 @@ class TestMandrill(unittest.TestCase):
         self.assertEqual(isNone, None)
 
     def test_error(self):
-        common.metrics = [{
+        conf.metrics = [{
             "name":"metric",
             "path":"metric.json"
         }]
@@ -104,7 +103,7 @@ class TestMandrill(unittest.TestCase):
             self.assertEqual(str(e), "invalid API key")
 
     def test_required_metric(self):
-        common.metrics = [{
+        conf.metrics = [{
             "name":"metric",
             "path":"metric.json",
             "required":"type",
@@ -133,8 +132,8 @@ class TestMandrill(unittest.TestCase):
         req2, body2 = args[1][0]
         body1 = json.loads(body1)
         body2 = json.loads(body2)
-        url1 = common.BASE_URL + "metric/list.json"
-        url2 = common.BASE_URL + "metric.json"
+        url1 = conf.BASE_URL + "metric/list.json"
+        url2 = conf.BASE_URL + "metric.json"
         self.assertEqual(req1.get_full_url(), url1)
         self.assertEqual(req2.get_full_url(), url2)
         self.assertEqual(body2.get("type"), "id1")
