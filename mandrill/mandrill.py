@@ -43,7 +43,7 @@ class Mandrill(panoply.DataSource):
 
 
         requiredList = metric.get("requiredList", [])
-        if len(requiredList) > 0:
+        if len(requiredList):
             requiredName = metric["required"]
             requiredItem = requiredList[0]
             body[ requiredName ] = requiredItem
@@ -55,12 +55,12 @@ class Mandrill(panoply.DataSource):
 
         # if it wasn't the last required item just pop it from the metric
         # required list
-        if len(requiredList) > 1 :
+        if len(requiredList):
             metric["requiredList"].pop(0)
 
         # if it was the last required item or this metric don't have a required 
         # items pop the metric from the metric list
-        else:
+        if not len(requiredList):
             self._metrics.pop(0)
             loaded = self._total - len(self._metrics)
             msg = "%s of %s metrics loaded" % (loaded, self._total)
