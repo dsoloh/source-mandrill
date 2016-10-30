@@ -20,6 +20,12 @@ class TestMandrill(unittest.TestCase):
         conf.metrics = self.orig_metrics
         urllib2.urlopen = self.orig_urlopen
 
+    def test_defaults(self):
+        source = {"key":"MandrillKey"}
+        Mandrill(source, OPTIONS)
+        self.assertEqual(source["idpattern"], IDPATTERN)
+        self.assertEqual(source["destination"], DESTINATION)
+
     def test_simple_request(self):
         conf.metrics = [{ 
             "name":"metric",
@@ -53,7 +59,7 @@ class TestMandrill(unittest.TestCase):
         }, OPTIONS)
         result = stream.read()[0]
         self.assertEqual(result.get("type"), "metric")
-        self.assertEqual(result.get("key"), "val")
+        self.assertEqual(result.get("key"), "MandrillKey")
 
     def test_iterate_metrics(self):
         conf.metrics = [
