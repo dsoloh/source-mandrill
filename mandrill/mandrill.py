@@ -18,10 +18,10 @@ class Mandrill(panoply.DataSource):
     def __init__(self, source, opt):
         super(Mandrill, self).__init__(source, opt)
 
-        if not "destination" in source:
+        if "destination" not in source:
             source["destination"] = DESTINATION
 
-        if not "idpattern" in source:
+        if "idpattern" not in source:
             source["idpattern"] = IDPATTERN
 
         fromsec = int(time.time() - (DAY_RANGE * DAY))
