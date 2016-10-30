@@ -10,18 +10,26 @@ HOUR = 60 * MINUTE
 DAY = 24 * HOUR
 BASE_URL = conf.BASE_URL
 DAY_RANGE = conf.DAY_RANGE
+DESTINATION = "mandrill_{type}"
+IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}"
 
 class Mandrill(panoply.DataSource):
 
     def __init__(self, source, opt):
         super(Mandrill, self).__init__(source, opt)
+
+        if not "destination" in source:
+            source["destination"] = DESTINATION
+
+        if not "idpattern" in source:
+            source["idpattern"] = IDPATTERN
+
         fromsec = int(time.time() - (DAY_RANGE * DAY))
         self._from = time.strftime("%Y-%m-%d", time.gmtime(fromsec))
         self._to = time.strftime("%Y-%m-%d", time.gmtime())
         self._metrics = copy.deepcopy(conf.metrics)
         self._total = len(self._metrics)
         self._key = source["key"]
-
 
     def read(self, n = None):
         if len(self._metrics) == 0:
@@ -43,15 +51,19 @@ class Mandrill(panoply.DataSource):
 
 
         requiredList = metric.get("requiredList", [])
+        additionalData = {}
         if len(requiredList):
             requiredName = metric["required"]
             requiredItem = requiredList[0]
-            body[requiredName] = requiredItem
+            additionalData[requiredName] = requiredItem
 
+        body.update(additionalData)
         result = self._request(url, body)
         # add the result type for each row
         for row in result:
             row["type"] = metric["name"]
+            row["key"] = self._key
+            row.update(additionalData)
 
         # if it wasn't the last required item just pop it from the metric
         # required list
