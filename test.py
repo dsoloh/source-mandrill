@@ -51,7 +51,7 @@ class TestMandrill(unittest.TestCase):
             "path":"metric.json"
         }]
 
-        urlRes = BytesIO(json.dumps([{"key":"val"}]))
+        urlRes = BytesIO(json.dumps([{"hello":"world"}]))
         urllib2.urlopen = MagicMock(return_value=urlRes)
         
         stream = Mandrill({
@@ -59,7 +59,7 @@ class TestMandrill(unittest.TestCase):
         }, OPTIONS)
         result = stream.read()[0]
         self.assertEqual(result.get("type"), "metric")
-        self.assertEqual(result.get("key"), "MandrillKey")
+        self.assertEqual(result.get("hello"), "world")
 
     def test_iterate_metrics(self):
         conf.metrics = [
@@ -114,16 +114,16 @@ class TestMandrill(unittest.TestCase):
         conf.metrics = [{
             "name":"metric",
             "path":"metric.json",
-            "required":"type",
+            "required":"name",
             "listpath":"metric/list.json"
         }]
 
         res1 = BytesIO(json.dumps([
-            {"type":"id1"},
-            {"type":"id2"}
+            {"name":"id1"},
+            {"name":"id2"}
         ]))
-        res2 = BytesIO("[]")
-        res3 = BytesIO("[]")
+        res2 = BytesIO("[{}]")
+        res3 = BytesIO("[{}]")
 
         mock = MagicMock();
         mock.side_effect = [res1, res2, res3]
@@ -132,7 +132,7 @@ class TestMandrill(unittest.TestCase):
         stream = Mandrill({
             "key":"MandrillKey"
         }, OPTIONS)
-        stream.read()
+        result = stream.read()[0]
 
         args = urllib2.urlopen.call_args_list
         self.assertEqual(mock.call_count, 2)
@@ -144,14 +144,16 @@ class TestMandrill(unittest.TestCase):
         url2 = conf.BASE_URL + "metric.json"
         self.assertEqual(req1.get_full_url(), url1)
         self.assertEqual(req2.get_full_url(), url2)
-        self.assertEqual(body2.get("type"), "id1")
+        self.assertEqual(body2.get("name"), "id1")
+        self.assertEqual(result.get("name"), "id1") # add the name to the result
         
         # iterate over the required list
-        stream.read()
+        result = stream.read()[0]
         self.assertEqual(mock.call_count, 3)
         req3, body3 = args[2][0]
         body3 = json.loads(body3)
-        self.assertEqual(body3.get("type"), "id2")
+        self.assertEqual(body3.get("name"), "id2")
+        self.assertEqual(result.get("name"), "id2") # add the name to the result
 
         # make sure we done
         isNone = stream.read()
