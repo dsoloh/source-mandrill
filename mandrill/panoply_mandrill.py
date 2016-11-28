@@ -31,11 +31,8 @@ class PanoplyMandrill(panoply.DataSource):
         self.metrics = copy.deepcopy(conf.metrics)
         self.total = len(self.metrics)
         self.mandrill_client = Mandrill(source.get('key'))
-        try:
-            self.mandrill_client.users.ping()
-        except InvalidKeyError:
-            raise Exception('WOWOWOWOWOWOWOWOWOWOWO')
-
+        self.mandrill_client.users.ping()
+        
     def read(self, n = None):
         return None
         if len(self.metrics) == 0:
