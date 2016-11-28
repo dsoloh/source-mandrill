@@ -43,7 +43,7 @@ class PanoplyMandrill(panoply.DataSource):
         while metric.get('required'):
             metric = self.metrics[0]
             self.metrics.pop(0)
-        result = self.mandrill_client[metric['category']][metric['path']]()
+        result = getattr(getattr(self.mandrill_client, metric['category']), metric['path'])()
         for row in result:
             row["type"] = metric["name"]
             row["key"] = self.key
