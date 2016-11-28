@@ -21,24 +21,24 @@ metrics = [
 
     {
         "name":"urls",
-        "path":"urls/time_series",
+        "path":"time_series",
         "required":"url",
     },
 
     {
         "name":"templates",
-        "path":"templates/time_series",
+        "path":"time_series",
         "required":"name",
     },
 
     {
         "name":"webhooks",
-        "path":"webhooks/list"
+        "path":"list"
     },
 
     {
         "name":"subaccounts",
-        "path":"subaccounts/list"
+        "path":"list"
     }
 ]
 # add a default category which equals to the name if category was not specified

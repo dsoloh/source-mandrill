@@ -30,66 +30,25 @@ class PanoplyMandrill(panoply.DataSource):
         self.toTime = time.strftime("%Y-%m-%d", time.gmtime())
         self.metrics = copy.deepcopy(conf.metrics)
         self.total = len(self.metrics)
-        self.mandrill_client = Mandrill(source.get('key'))
+        self.key = source.get('key')
+        self.mandrill_client = Mandrill(self.key)
+        # TODO: handle the error raised with wrong api key
         self.mandrill_client.users.ping()
-        
+
     def read(self, n = None):
-        return None
         if len(self.metrics) == 0:
             return None # No more data to consume
         metric = self.metrics[0]
-        url = BASE_URL + metric["path"]
-        body = {
-            "key": self._key,
-            "date_from": self._from,
-            "date_to": self._to
-        }
-        # initiate the required item list for the given metric
-        if "required" in metric and "requiredList" not in metric:
-            metric["requiredList"] = self._getRequireds(metric)
-            # if no required items were found continue to the next metric
-            if not len(metric["requiredList"]):
-                self.metrics.pop(0)
-                return self.read()
-
-
-        requiredList = metric.get("requiredList", [])
-        additionalData = {}
-        if len(requiredList):
-            requiredName = metric["required"]
-            requiredItem = requiredList[0]
-            additionalData[requiredName] = requiredItem
-
-        body.update(additionalData)
-        result = self._request(url, body)
-        # add the result type for each row
+        # for now lets skip the required stuff
+        while metric.required:
+            metric = self.metrics[0]
+            self.metrics.pop(0)
+        result = self.mandrill_client[metric.category][metric.path]()
         for row in result:
             row["type"] = metric["name"]
-            row["key"] = self._key
-            row.update(additionalData)
-
-        # if it wasn't the last required item just pop it from the metric
-        # required list
-        if len(requiredList):
-            metric["requiredList"].pop(0)
-
-        # if it was the last required item or this metric don't have a required 
-        # items pop the metric from the metric list
-        if not len(requiredList):
-            self.metrics.pop(0)
-            loaded = self._total - len(self.metrics)
-            msg = "%s of %s metrics loaded" % (loaded, self._total)
-            self.progress(loaded, self._total, msg)
+            row["key"] = self.key
+        self.metrics.pop(0)
+        loaded = self.total - len(self.metrics)
+        msg = "%s of %s metrics loaded" % (loaded, self.total)
+        self.progress(loaded, self.total, msg)
         return result
-
-    # get the required items for the given metrics and 
-    # return the number for items found
-    def _getRequireds(self, metric):
-        url = BASE_URL + metric["listpath"]
-        body = {
-            "key": self._key
-        }
-
-        result = self._request(url, body)
-        requiredName = metric["required"]
-        return [row.get(requiredName) for row in result]
