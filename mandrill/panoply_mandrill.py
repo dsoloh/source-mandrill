@@ -4,7 +4,7 @@ import conf
 import copy
 import time
 import json
-import mandrill
+from mandrill import Mandrill, InvalidKeyError
 
 MINUTE = 60
 HOUR = 60 * MINUTE
@@ -31,7 +31,10 @@ class PanoplyMandrill(panoply.DataSource):
         self.metrics = copy.deepcopy(conf.metrics)
         self.total = len(self.metrics)
         self.mandrill_client = mandrill.Mandrill(source.get('key'))
-        self.mandrill_client.users.ping()
+        try:
+            self.mandrill_client.users.ping()
+        except InvalidKeyError:
+            raise Error('WOWOWOWOWOWOWOWOWOWOWO')
 
     def read(self, n = None):
         return None
