@@ -16,7 +16,6 @@ IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}"
 class Mandrill(panoply.DataSource):
 
     def __init__(self, source, opt):
-        raise Exception('I am here')
         super(Mandrill, self).__init__(source, opt)
 
         if "destination" not in source:
@@ -33,7 +32,6 @@ class Mandrill(panoply.DataSource):
         self._key = source["key"]
 
     def read(self, n = None):
-        raise Exception('I am herehere')
         if len(self._metrics) == 0:
             return None # No more data to consume
         metric = self._metrics[0]
