@@ -10,7 +10,8 @@ setup(
     package_dir={"panoply": ""},
     install_requires=[
         "panoply-python-sdk",
-        "mock==1.0.1"
+        "mock==1.0.1",
+        "mandrill==1.0.57"
     ],
     packages=["panoply.mandrill"]
 )
