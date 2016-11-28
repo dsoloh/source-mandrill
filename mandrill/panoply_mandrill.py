@@ -14,7 +14,7 @@ DAY_RANGE = conf.DAY_RANGE
 DESTINATION = "mandrill_{type}"
 IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}"
 
-class Mandrill(panoply.DataSource):
+class PanoplyMandrill(panoply.DataSource):
 
     def __init__(self, source, opt):
         super(Mandrill, self).__init__(source, opt)

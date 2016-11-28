@@ -1,6 +1,6 @@
-from mandrill import *
+from panoply_mandrill import PanoplyMandrill
 
-Stream = Mandrill
+Stream = PanoplyMandrill
 
 CONFIG = {
     "title": "Mandrill",
