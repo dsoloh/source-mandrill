@@ -48,7 +48,10 @@ class PanoplyMandrill(panoply.DataSource):
             row["type"] = metric["name"]
             row["key"] = self.key
         self.metrics.pop(0)
+        self.reportProgress()
+        return result
+    
+    def reportProgress(self):
         loaded = self.total - len(self.metrics)
         msg = "%s of %s metrics loaded" % (loaded, self.total)
         self.progress(loaded, self.total, msg)
-        return result
