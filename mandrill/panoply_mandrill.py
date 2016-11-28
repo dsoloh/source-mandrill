@@ -34,7 +34,7 @@ class PanoplyMandrill(panoply.DataSource):
         try:
             self.mandrill_client.users.ping()
         except InvalidKeyError:
-            raise Error('WOWOWOWOWOWOWOWOWOWOWO')
+            raise Exception('WOWOWOWOWOWOWOWOWOWOWO')
 
     def read(self, n = None):
         return None
