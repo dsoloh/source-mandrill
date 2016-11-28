@@ -17,7 +17,7 @@ IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}"
 class PanoplyMandrill(panoply.DataSource):
 
     def __init__(self, source, opt):
-        super(Mandrill, self).__init__(source, opt)
+        super(PanoplyMandrill, self).__init__(source, opt)
 
         if "destination" not in source:
             source["destination"] = DESTINATION
