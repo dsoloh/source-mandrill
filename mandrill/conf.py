@@ -43,3 +43,4 @@ metrics = [
 ]
 # add a default category which equals to the name if category was not specified
 metrics = [dict(category=x.pop('category', x.get('name')), **x) for x in metrics]
+
