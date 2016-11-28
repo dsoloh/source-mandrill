@@ -40,7 +40,7 @@ class PanoplyMandrill(panoply.DataSource):
             return None # No more data to consume
         metric = self.metrics[0]
         # for now lets skip the required stuff
-        while metric.required:
+        while metric.get('required'):
             metric = self.metrics[0]
             self.metrics.pop(0)
         result = self.mandrill_client[metric.category][metric.path]()
