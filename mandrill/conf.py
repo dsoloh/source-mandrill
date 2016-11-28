@@ -5,42 +5,41 @@ DAY_RANGE = 30 # The range of days to import data from
 metrics = [
     {
         "name":"messages",
-        "path":"messages/search-time-series.json"
+        "path":"search_time_series"
     },
 
     {
         "name":"tags",
-        "path":"tags/all-time-series.json"
+        "path":"all_time_series"
     },
 
     {
         "name":"senders",
-        "path":"senders/time-series.json",
+        "path":"time_series",
         "required":"address",
-        "listpath":"senders/list.json"
     },
 
     {
         "name":"urls",
-        "path":"urls/time-series.json",
+        "path":"urls/time_series",
         "required":"url",
-        "listpath":"urls/list.json"
     },
 
     {
         "name":"templates",
-        "path":"templates/time-series.json",
+        "path":"templates/time_series",
         "required":"name",
-        "listpath":"templates/list.json"
     },
 
     {
         "name":"webhooks",
-        "path":"webhooks/list.json"
+        "path":"webhooks/list"
     },
 
     {
         "name":"subaccounts",
-        "path":"subaccounts/list.json"
+        "path":"subaccounts/list"
     }
 ]
+# add a default category which equals to the name if category was not specified
+metrics = [dict(category=x.pop('category', x.get('name')), **x) for x in metrics]

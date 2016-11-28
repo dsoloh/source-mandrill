@@ -4,6 +4,7 @@ import conf
 import copy
 import time
 import json
+import mandrill
 
 MINUTE = 60
 HOUR = 60 * MINUTE
@@ -25,16 +26,18 @@ class Mandrill(panoply.DataSource):
             source["idpattern"] = IDPATTERN
 
         fromsec = int(time.time() - (DAY_RANGE * DAY))
-        self._from = time.strftime("%Y-%m-%d", time.gmtime(fromsec))
-        self._to = time.strftime("%Y-%m-%d", time.gmtime())
-        self._metrics = copy.deepcopy(conf.metrics)
-        self._total = len(self._metrics)
-        self._key = source["key"]
+        self.fromTime = time.strftime("%Y-%m-%d", time.gmtime(fromsec))
+        self.toTime = time.strftime("%Y-%m-%d", time.gmtime())
+        self.metrics = copy.deepcopy(conf.metrics)
+        self.total = len(self.metrics)
+        self.mandrill_client = mandrill.Mandrill(source.get('key'))
+        self.mandrill_client.users.ping()
 
     def read(self, n = None):
-        if len(self._metrics) == 0:
+        return None
+        if len(self.metrics) == 0:
             return None # No more data to consume
-        metric = self._metrics[0]
+        metric = self.metrics[0]
         url = BASE_URL + metric["path"]
         body = {
             "key": self._key,
@@ -46,7 +49,7 @@ class Mandrill(panoply.DataSource):
             metric["requiredList"] = self._getRequireds(metric)
             # if no required items were found continue to the next metric
             if not len(metric["requiredList"]):
-                self._metrics.pop(0)
+                self.metrics.pop(0)
                 return self.read()
 
 
@@ -73,8 +76,8 @@ class Mandrill(panoply.DataSource):
         # if it was the last required item or this metric don't have a required 
         # items pop the metric from the metric list
         if not len(requiredList):
-            self._metrics.pop(0)
-            loaded = self._total - len(self._metrics)
+            self.metrics.pop(0)
+            loaded = self._total - len(self.metrics)
             msg = "%s of %s metrics loaded" % (loaded, self._total)
             self.progress(loaded, self._total, msg)
         return result
