@@ -16,6 +16,7 @@ IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}"
 class Mandrill(panoply.DataSource):
 
     def __init__(self, source, opt):
+        raise Exception('I am here')
         super(Mandrill, self).__init__(source, opt)
 
         if "destination" not in source:
@@ -32,6 +33,7 @@ class Mandrill(panoply.DataSource):
         self._key = source["key"]
 
     def read(self, n = None):
+        raise Exception('I am herehere')
         if len(self._metrics) == 0:
             return None # No more data to consume
         metric = self._metrics[0]
@@ -90,32 +92,3 @@ class Mandrill(panoply.DataSource):
         result = self._request(url, body)
         requiredName = metric["required"]
         return [row.get(requiredName) for row in result]
-
-    def _request(self, url, body):
-        req = urllib2.Request(url)
-        data = json.dumps(body)
-        req.add_header("Content-Type", "application/json")
-
-        self.log("POST", url)
-
-        try:
-            res = urllib2.urlopen(req, data)
-        except urllib2.HTTPError, e:
-            raise MandrillError.from_http_error(e)
-
-        self.log("RESPONSE", url)
-
-        return json.loads(res.read())
-
-
-class MandrillError(Exception):
-
-    # Transform the generic urllib2.HTTPError to more descriptive exception
-    # based on the JSON error description provide by mandrill API
-    @classmethod
-    def from_http_error(cls, err):
-        body = err.read()
-        description = json.loads(body)
-        if "message" in description:
-            return cls(description["message"])
-        return err
