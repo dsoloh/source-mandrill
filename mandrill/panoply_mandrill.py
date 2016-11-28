@@ -30,7 +30,7 @@ class PanoplyMandrill(panoply.DataSource):
         self.toTime = time.strftime("%Y-%m-%d", time.gmtime())
         self.metrics = copy.deepcopy(conf.metrics)
         self.total = len(self.metrics)
-        self.mandrill_client = mandrill.Mandrill(source.get('key'))
+        self.mandrill_client = Mandrill(source.get('key'))
         try:
             self.mandrill_client.users.ping()
         except InvalidKeyError:
