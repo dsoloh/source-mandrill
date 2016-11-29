@@ -6,7 +6,7 @@ import time
 import json
 from functools import partial
 from itertools import chain
-from mandrill import Mandrill, InvalidKeyError
+from mandrill import Mandrill
 
 MINUTE = 60
 HOUR = 60 * MINUTE
@@ -51,7 +51,7 @@ class PanoplyMandrill(panoply.DataSource):
         self.total = len(self.metrics)
         self.key = source.get('key')
         self.mandrill_client = Mandrill(self.key)
-        # TODO: handle the error raised with wrong api key
+        # will raise InvalidKeyError if the api key is wrong
         self.mandrill_client.users.ping()
 
     @reportProgress
