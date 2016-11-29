@@ -69,7 +69,7 @@ class PanoplyMandrill(panoply.DataSource):
         # add type and key to each row
         result = [dict(type=metric["name"], key=self.key, **row) for row in result]
         self.metrics.pop(0)
-        return result   
+        return result
     
     def getFn(self, metric, path=None):
         '''dynamically locate the right function to call from the sdk.'''
