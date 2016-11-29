@@ -43,9 +43,7 @@ class PanoplyMandrill(panoply.DataSource):
             self.metrics.pop(0)
 
         result = self.getFn(metric)()
-        for row in result:
-            row["type"] = metric["name"]
-            row["key"] = self.key
+        result = [dict(type=metric["name"], key=self.key, **row) for row in result]
         self.metrics.pop(0)
         self.reportProgress()
         return result
