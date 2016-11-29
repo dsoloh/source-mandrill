@@ -57,20 +57,27 @@ class PanoplyMandrill(panoply.DataSource):
         self.progress(loaded, self.total, msg)
     
     def getFn(self, metric, path=None):
-        # dynamically locate the right function to call from the sdk.
+        '''dynamically locate the right function to call from the sdk.'''
         return getattr(getattr(self.mandrill_client, metric['category']), path or metric['path'])
     
     def handleRequired(self, metric, required_field):
-        # for metrics that would need an extra api call before they can work
+        '''for metrics that would need an extra api call before they can work.'''
         list_fn = self.getFn(metric, 'list')
         extracted_fields = [row.get(required_field) for row in list_fn() if row.get(required_field)]
         fn = self.getFn(metric)
         # dynamically choose the paramater to send to the function
-        result = [fn(**{'' + required_field: field}) for field in extracted_fields]
+        param_dict = {'' + required_field: field}
+        result = [[mergeDicts(param_dict, response_obj) for response_obj in fn(**param_dict)] for field in extracted_fields]
         # flatten the list
         result = list(chain.from_iterable(result))
         return result
     
     def handleRegular(self, metric):
-        # for your everyday metric
+        '''for your everyday metric.'''
         return self.getFn(metric)()
+
+def mergeDicts(a_dict, b_dict):
+    '''Given two dicts, merge them into a new dict as a shallow copy.'''
+    z = x.copy()
+    z.update(y)
+    return z
