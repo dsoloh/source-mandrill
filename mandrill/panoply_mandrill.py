@@ -62,7 +62,7 @@ class PanoplyMandrill(panoply.DataSource):
     def handleRequired(self, metric, required_field):
         # for metrics that would need an extra api call before they can work
         list_fn = self.getFn(metric, 'list')
-        extracted_fields = [row.get(required_field) if row.get(required_field) for row in list_fn()]
+        extracted_fields = [row.get(required_field) for row in list_fn() if row.get(required_field)]
         fn = self.getFn(metric)
         # dynamically choose the paramater to send to the function
         return [fn(**{'' + required_field: field} for extracted_fields)]
