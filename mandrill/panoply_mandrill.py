@@ -34,6 +34,7 @@ class PanoplyMandrill(panoply.DataSource):
         # TODO: handle the error raised with wrong api key
         self.mandrill_client.users.ping()
 
+    @reportProgress
     def read(self, n = None):
         if len(self.metrics) == 0:
             return None # No more data to consume
@@ -48,13 +49,19 @@ class PanoplyMandrill(panoply.DataSource):
         # add type and key to each row
         result = [dict(type=metric["name"], key=self.key, **row) for row in result]
         self.metrics.pop(0)
-        self.reportProgress()
-        return result
+        return result   
     
-    def reportProgress(self):
-        loaded = self.total - len(self.metrics)
-        msg = "%s of %s metrics loaded" % (loaded, self.total)
-        self.progress(loaded, self.total, msg)
+    @staticmethod
+    def reportProgress(fn):
+        '''decorator for auto progress report'''
+            def wrapper(*args):
+                result = fn(*args)
+                loaded = self.total - len(self.metrics)
+                msg = "%s of %s metrics loaded" % (loaded, self.total)
+                # args[0] is self
+                args[0].progress(loaded, self.total, msg)
+                return result
+        return wrapper
     
     def getFn(self, metric, path=None):
         '''dynamically locate the right function to call from the sdk.'''
@@ -77,7 +84,7 @@ class PanoplyMandrill(panoply.DataSource):
             # the info is the param dict itself (for example adding address: 'blabla@a.a')
             result = [mergeDicts(param_dict, response_obj) for response_obj in fn(**param_dict)]
             results.append(result)
-        # flatten the results (which are a list of lists)
+        # flatten the results (which are a list of lists) into flat list
         return list(chain.from_iterable(results))
     
     def handleRegular(self, metric):
