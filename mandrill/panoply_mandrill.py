@@ -61,9 +61,11 @@ class PanoplyMandrill(panoply.DataSource):
     
     def handleRequired(self, metric, required_field):
         # for metrics that would need an extra api call before they can work
-        fn = self.getFn(metric, 'list')
-        self.log(fn())
-        return []
+        list_fn = self.getFn(metric, 'list')
+        extracted_fields = [row.get(required_field) if row.get(required_field) for row in list_fn()]
+        fn = self.getFn(metric)
+        # dynamically choose the paramater to send to the function
+        return [fn(**{'' + required_field: field} for extracted_fields)]
     
     def handleRegular(self, metric):
         # for your everyday metric
