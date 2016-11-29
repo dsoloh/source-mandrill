@@ -40,7 +40,7 @@ class PanoplyMandrill(panoply.DataSource):
 
         # choose the right handler for this metric
         required_field = metric.get("required")
-        handler = partial(self.handleRequired, required_field) if required_field \
+        handler = partial(self.handleRequired, metric, required_field) if required_field \
                     else partial(self.handleRegular, metric)
 
         result = handler()
@@ -55,12 +55,16 @@ class PanoplyMandrill(panoply.DataSource):
         msg = "%s of %s metrics loaded" % (loaded, self.total)
         self.progress(loaded, self.total, msg)
     
-    def getFn(self, metric):
+    def getFn(self, metric, path=None):
         # dynamically locate the right function to call from the sdk.
-        return getattr(getattr(self.mandrill_client, metric['category']), metric['path'])
+        return getattr(getattr(self.mandrill_client, metric['category']), path or metric['path'])
     
-    def handleRequired(self, required_field):
+    def handleRequired(self, metric, required_field):
+        # for metrics that would need an extra api call before they can work
+        fn = self.getFn(metric, 'list')
+        self.log(fn())
         return []
     
     def handleRegular(self, metric):
+        # for your everyday metric
         return self.getFn(metric)()
