@@ -5,6 +5,7 @@ import copy
 import time
 import json
 from functools import partial
+from itertools import chain
 from mandrill import Mandrill, InvalidKeyError
 
 MINUTE = 60
@@ -65,7 +66,10 @@ class PanoplyMandrill(panoply.DataSource):
         extracted_fields = [row.get(required_field) for row in list_fn() if row.get(required_field)]
         fn = self.getFn(metric)
         # dynamically choose the paramater to send to the function
-        return [fn(**{'' + required_field: field}) for field in extracted_fields]
+        result = [fn(**{'' + required_field: field}) for field in extracted_fields]
+        # flatten the list
+        result = list(chain.from_iterable(result))
+        return result
     
     def handleRegular(self, metric):
         # for your everyday metric
