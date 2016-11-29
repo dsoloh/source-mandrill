@@ -4,6 +4,7 @@ import conf
 import copy
 import time
 import json
+from functools import partial
 from mandrill import Mandrill, InvalidKeyError
 
 MINUTE = 60
@@ -39,7 +40,8 @@ class PanoplyMandrill(panoply.DataSource):
 
         # choose the right handler for this metric
         required_field = metric.get("required")
-        handler = self.handleRequired if required_field else self.handleRegular
+        handler = partial(self.handleRequired, required_field) if required_field \
+                    else partial(self.handleRegular, metric)
 
         result = handler()
         # add type and key to each row
@@ -57,8 +59,8 @@ class PanoplyMandrill(panoply.DataSource):
         # dynamically locate the right function to call from the sdk.
         return getattr(getattr(self.mandrill_client, metric['category']), metric['path'])
     
-    def handleRequired(self):
+    def handleRequired(self, required_field):
         return []
     
-    def handleRegular(self):
+    def handleRegular(self, metric):
         return self.getFn(metric)()
