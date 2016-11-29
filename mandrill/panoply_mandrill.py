@@ -32,6 +32,9 @@ def reportProgress(fn):
         self.progress(loaded, self.total, msg)
         return result
     return wrapper
+
+def formatTime(struct_time, format="%Y-%m-%d"):
+    return time.strftime(format, struct_time)
 # ****         until here        *****
 
 class PanoplyMandrill(panoply.DataSource):
@@ -43,8 +46,7 @@ class PanoplyMandrill(panoply.DataSource):
         source["idpattern"] = source.get("idpattern") or IDPATTERN
 
         fromsec = int(time.time() - (DAY_RANGE * DAY))
-        self.fromTime = time.strftime("%Y-%m-%d", time.gmtime(fromsec))
-        self.toTime = time.strftime("%Y-%m-%d", time.gmtime())
+        self.fromTime, self.toTime = formatTime(time.gmtime(fromsec)), formatTime(time.gmtime())
         self.metrics = copy.deepcopy(conf.metrics)
         self.total = len(self.metrics)
         self.key = source.get('key')
