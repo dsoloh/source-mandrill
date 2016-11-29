@@ -65,18 +65,26 @@ class PanoplyMandrill(panoply.DataSource):
         list_fn = self.getFn(metric, 'list')
         extracted_fields = [row.get(required_field) for row in list_fn() if row.get(required_field)]
         fn = self.getFn(metric)
-        # dynamically choose the paramater to send to the function
-        param_dict = {'' + required_field: field}
-        result = [[mergeDicts(param_dict, response_obj) for response_obj in fn(**param_dict)] for field in extracted_fields]
-        # flatten the list
-        result = list(chain.from_iterable(result))
-        return result
+        # for each field we have (for example each email we got from the list call)
+        # do an api call on that field
+        # for example mandrill_client.senders.time_series(address='someUnique@email.com')
+        results = []
+        for field in extracted_fields:
+            # dynamically choose the paramater to send to the function
+            param_dict = {'' + required_field: field}
+            # the response from the api call contains an array, we need to add some info
+            # on each of the result objects inside this array
+            # the info is the param dict itself (for example adding address: 'blabla@a.a')
+            result = [mergeDicts(param_dict, response_obj) for response_obj in fn(**param_dict)]
+            results.append(result)
+        # flatten the results (which are a list of lists)
+        return list(chain.from_iterable(results))
     
     def handleRegular(self, metric):
         '''for your everyday metric.'''
         return self.getFn(metric)()
 
-def mergeDicts(a_dict, b_dict):
+def mergeDicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
     z = x.copy()
     z.update(y)
