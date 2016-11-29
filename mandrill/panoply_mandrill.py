@@ -90,7 +90,7 @@ class PanoplyMandrill(panoply.DataSource):
         results = []
         for field in extracted_fields:
             # dynamically choose the paramater to send to the function
-            param_dict = {'' + required_field: field}
+            param_dict = {required_field: field}
             # the response from the api call contains an array, we need to add some info
             # on each of the result objects inside this array
             # the info is the param dict itself (for example adding address: 'blabla@a.a')
