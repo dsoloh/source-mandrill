@@ -2,10 +2,10 @@ from distutils.core import setup
 
 setup(
     name="panoply_mandrill",
-    version="0.2",
+    version="1.0.1",
     description="Panoply Data Source for Mandrill API",
-    author="Oshri Bienhaker, Kfir Gez",
-    author_email="oshri@panoply.io, kfir@panoply.io",
+    author="Kfir Gez, Oshri Bienhaker",
+    author_email="kfir@panoply.io, oshri@panoply.io",
     url="http://panoply.io",
     package_dir={"panoply": ""},
     install_requires=[
