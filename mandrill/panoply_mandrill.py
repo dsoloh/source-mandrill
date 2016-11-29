@@ -16,6 +16,24 @@ DAY_RANGE = conf.DAY_RANGE
 DESTINATION = "mandrill_{type}"
 IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}"
 
+# **** helper functions from here ****
+def mergeDicts(x, y):
+    '''Given two dicts, merge them into a new dict as a shallow copy.'''
+    z = x.copy()
+    z.update(y)
+    return z
+
+def reportProgress(fn):
+    '''decorator for auto progress report'''
+    def wrapper(self, *args, **kwargs):
+        result = fn(self, *args, **kwargs)
+        loaded = self.total - len(self.metrics)
+        msg = "%s of %s metrics loaded" % (loaded, self.total)
+        self.progress(loaded, self.total, msg)
+        return result
+    return wrapper
+# ****         until here        *****
+
 class PanoplyMandrill(panoply.DataSource):
 
     def __init__(self, source, opt):
@@ -78,19 +96,3 @@ class PanoplyMandrill(panoply.DataSource):
     def handleRegular(self, metric):
         '''for your everyday metric.'''
         return self.getFn(metric)()
-
-def mergeDicts(x, y):
-    '''Given two dicts, merge them into a new dict as a shallow copy.'''
-    z = x.copy()
-    z.update(y)
-    return z
-
-def reportProgress(fn):
-    '''decorator for auto progress report'''
-    def wrapper(self, *args, **kwargs):
-        result = fn(self, *args, **kwargs)
-        loaded = self.total - len(self.metrics)
-        msg = "%s of %s metrics loaded" % (loaded, self.total)
-        self.progress(loaded, self.total, msg)
-        return result
-    return wrapper
