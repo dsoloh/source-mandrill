@@ -11,7 +11,6 @@ from mandrill import Mandrill
 MINUTE = 60
 HOUR = 60 * MINUTE
 DAY = 24 * HOUR
-BASE_URL = conf.BASE_URL
 DAY_RANGE = conf.DAY_RANGE
 DESTINATION = "mandrill_{type}"
 IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}"

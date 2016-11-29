@@ -1,4 +1,5 @@
 from panoply_mandrill import PanoplyMandrill
+from conf import metrics
 
 Stream = PanoplyMandrill
 
