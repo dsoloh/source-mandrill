@@ -37,12 +37,12 @@ class PanoplyMandrill(panoply.DataSource):
             return None # No more data to consume
         metric = self.metrics[0]
 
-        # for now lets skip the required stuff
-        while metric.get('required'):
-            metric = self.metrics[0]
-            self.metrics.pop(0)
+        # choose the right handler for this metric
+        required_field = metric.get("required")
+        handler = self.handleRequired if required_field else self.handleRegular
 
-        result = self.getFn(metric)()
+        result = handler()
+        # add type and key to each row
         result = [dict(type=metric["name"], key=self.key, **row) for row in result]
         self.metrics.pop(0)
         self.reportProgress()
@@ -56,3 +56,9 @@ class PanoplyMandrill(panoply.DataSource):
     def getFn(self, metric):
         # dynamically locate the right function to call from the sdk.
         return getattr(getattr(self.mandrill_client, metric['category']), metric['path'])
+    
+    def handleRequired(self):
+        return []
+    
+    def handleRegular(self):
+        return self.getFn(metric)()
