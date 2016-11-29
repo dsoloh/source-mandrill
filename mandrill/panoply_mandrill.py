@@ -51,18 +51,6 @@ class PanoplyMandrill(panoply.DataSource):
         self.metrics.pop(0)
         return result   
     
-    @staticmethod
-    def reportProgress(fn):
-        '''decorator for auto progress report'''
-        def wrapper(*args):
-            result = fn(*args)
-            loaded = self.total - len(self.metrics)
-            msg = "%s of %s metrics loaded" % (loaded, self.total)
-            # args[0] is self
-            args[0].progress(loaded, self.total, msg)
-            return result
-        return wrapper
-    
     def getFn(self, metric, path=None):
         '''dynamically locate the right function to call from the sdk.'''
         return getattr(getattr(self.mandrill_client, metric['category']), path or metric['path'])
@@ -96,3 +84,13 @@ def mergeDicts(x, y):
     z = x.copy()
     z.update(y)
     return z
+
+def reportProgress(fn):
+    '''decorator for auto progress report'''
+    def wrapper(self, *args, **kwargs):
+        result = fn(self, *args, **kwargs)
+        loaded = self.total - len(self.metrics)
+        msg = "%s of %s metrics loaded" % (loaded, self.total)
+        self.progress(loaded, self.total, msg)
+        return result
+    return wrapper
