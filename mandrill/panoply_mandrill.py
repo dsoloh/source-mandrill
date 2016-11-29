@@ -54,13 +54,13 @@ class PanoplyMandrill(panoply.DataSource):
     @staticmethod
     def reportProgress(fn):
         '''decorator for auto progress report'''
-            def wrapper(*args):
-                result = fn(*args)
-                loaded = self.total - len(self.metrics)
-                msg = "%s of %s metrics loaded" % (loaded, self.total)
-                # args[0] is self
-                args[0].progress(loaded, self.total, msg)
-                return result
+        def wrapper(*args):
+            result = fn(*args)
+            loaded = self.total - len(self.metrics)
+            msg = "%s of %s metrics loaded" % (loaded, self.total)
+            # args[0] is self
+            args[0].progress(loaded, self.total, msg)
+            return result
         return wrapper
     
     def getFn(self, metric, path=None):
