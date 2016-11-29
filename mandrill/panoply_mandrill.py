@@ -73,7 +73,10 @@ class PanoplyMandrill(panoply.DataSource):
     
     def getFn(self, metric, path=None):
         '''dynamically locate the right function to call from the sdk.'''
-        return getattr(getattr(self.mandrill_client, metric['category']), path or metric['path'])
+        fn = getattr(getattr(self.mandrill_client, metric['category']), path or metric['path'])
+        if metric.get('includeTimeframe'):
+            fn = partial(fn, date_from=self.fromTime, date_to=self.toTime)
+        return fn
     
     def handleRequired(self, metric, required_field):
         '''for metrics that would need an extra api call before they can work.'''
