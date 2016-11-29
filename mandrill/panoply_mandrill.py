@@ -65,7 +65,7 @@ class PanoplyMandrill(panoply.DataSource):
         extracted_fields = [row.get(required_field) for row in list_fn() if row.get(required_field)]
         fn = self.getFn(metric)
         # dynamically choose the paramater to send to the function
-        return [fn(**{'' + required_field: field} for field in extracted_fields)]
+        return [fn(**{'' + required_field: field}) for field in extracted_fields]
     
     def handleRegular(self, metric):
         # for your everyday metric
