@@ -97,3 +97,13 @@ class PanoplyMandrill(panoply.DataSource):
     def handleRegular(self, metric):
         '''for your everyday metric.'''
         return self.getFn(metric)()
+
+    def handleExport(self, metric):
+        '''for export metrics'''
+        fn = self.getFn(metric)
+        args = {
+            notify_email: "kfir@panoply.io",
+            date_from: self.fromTime,
+            date_to: self.toTime
+        }
+        return fn(**args)

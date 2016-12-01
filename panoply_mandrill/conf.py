@@ -38,6 +38,12 @@ metrics = [
     {
         "name":"subaccounts",
         "path":"list"
+    },
+    # it is very important to leave the exports metric as the last metric
+    # since it can take a long time for it to resolve
+    {
+        "name":"exports",
+        "path": "activity"
     }
 ]
 # add a default category which equals to the name if category was not specified
