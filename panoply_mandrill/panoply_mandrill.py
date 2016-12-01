@@ -13,7 +13,6 @@ DAY_RANGE = conf.DAY_RANGE
 DESTINATION = "mandrill_{type}"
 IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}"
 
-# **** helper functions from here ****
 def mergeDicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
     z = x.copy()
@@ -32,7 +31,6 @@ def reportProgress(fn):
 
 def formatTime(struct_time, format="%Y-%m-%d"):
     return time.strftime(format, struct_time)
-# ****         until here        *****
 
 class PanoplyMandrill(panoply.DataSource):
 
