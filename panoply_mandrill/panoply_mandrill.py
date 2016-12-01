@@ -60,7 +60,7 @@ class PanoplyMandrill(panoply.DataSource):
         handler = lambda: None
         if required_field:
             handler = partial(self.handleRequired, metric, required_field)
-        elif metric.get('category') === 'exports':
+        elif metric.get('category') == 'exports':
             handler = partial(self.handleExport, metric)
         else:
             handler = partial(self.handleRegular, metric)
