@@ -57,8 +57,13 @@ class PanoplyMandrill(panoply.DataSource):
 
         # choose the right handler for this metric
         required_field = metric.get("required")
-        handler = partial(self.handleRequired, metric, required_field) if required_field \
-                    else partial(self.handleRegular, metric)
+        handler = lambda: None
+        if required_field:
+            handler = partial(self.handleRequired, metric, required_field)
+        elif metric.get('category') === 'exports':
+            handler = partial(self.handleExport, metric)
+        else:
+            handler = partial(self.handleRegular, metric)
 
         result = handler()
         # add type and key to each row
