@@ -111,4 +111,5 @@ class PanoplyMandrill(panoply.DataSource):
             date_from: self.fromTime,
             date_to: self.toTime
         }
-        return fn(**args)
+        fn(**args)
+        return []
