@@ -1,9 +1,7 @@
 import panoply
-import urllib2
 import conf
 import copy
 import time
-import json
 from functools import partial
 from itertools import chain
 from mandrill import Mandrill
