@@ -2,6 +2,7 @@ import panoply
 import conf
 import copy
 import time
+import tempfile
 import shutil
 import zipfile
 import csv
@@ -142,14 +143,18 @@ class PanoplyMandrill(panoply.DataSource):
         
         # now we have the url to download from
         req = urlopen(url)
-        with open('testtest.zip', 'wb') as fp:
-            shutil.copyfileobj(req, fp, COPY_CHUNK_SIZE)
-        zf = zipfile.ZipFile(req)
-        csv_reader = csv.DictReader(zf.open('activity.csv'), delimiter=',')
-        count = 0
-        for row in csv_reader:
-            count += 1
-            self.log('ROW IS:', row)
-            if count > 10:
-                break
+        tmp = tempfile.NamedTemporaryFile(delete=True)
+        try:
+            with open(tmp, 'wb') as fp:
+                shutil.copyfileobj(req, fp, COPY_CHUNK_SIZE)
+            zf = zipfile.ZipFile(req)
+            csv_reader = csv.DictReader(zf.open('activity.csv'), delimiter=',')
+            count = 0
+            for row in csv_reader:
+                count += 1
+                self.log('ROW IS:', row)
+                if count > 10:
+                    break
+        finally:
+            tmp.close()
         return []
