@@ -112,11 +112,17 @@ class PanoplyMandrill(panoply.DataSource):
         }
         job_info = fn(**args)
         url = None
-        while not url:
+
+        @reportProgress
+        def wait_for_job(self):
+            '''report progress is expecting self to be the first param'''
             job_status = self.mandrill_client.exports.info(id=job_info.get('id'))
             if (job_status.get('result_url')):
-                url = job_status.get('result_url')
-                break
+                return job_status.get('result_url')
             time.sleep(SLEEP_TIME_SECONDS)
+
+        while not url:
+            url = wait_for_job(self)
+
         self.log('WOWOWOWOWOWOWOWOWOWOW URL:', url)
         return []
