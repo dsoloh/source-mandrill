@@ -107,9 +107,7 @@ class PanoplyMandrill(panoply.DataSource):
         '''for export metrics'''
         fn = self.getFn(metric)
         args = {
-            "notify_email": "kfir@panoply.io",
-            "date_from": self.fromTime,
-            "date_to": self.toTime
+            "notify_email": "kfir@panoply.io"
         }
         fn(**args)
         return []

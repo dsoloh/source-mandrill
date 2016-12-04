@@ -43,7 +43,8 @@ metrics = [
     # since it can take a long time for it to resolve
     {
         "name":"exports",
-        "path": "activity"
+        "path": "activity",
+        "includeTimeframe": True
     }
 ]
 # add a default category which equals to the name if category was not specified
