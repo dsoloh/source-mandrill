@@ -154,4 +154,7 @@ class PanoplyMandrill(panoply.DataSource):
                 results.append(row.copy())
         finally:
             tmp_file.close()
+        for row in results:
+            self.log(row)
+            time.sleep(10)
         return results
