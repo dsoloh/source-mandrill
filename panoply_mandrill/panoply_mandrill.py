@@ -114,11 +114,8 @@ class PanoplyMandrill(panoply.DataSource):
     def handleExport(self, metric):
         '''for export metrics'''
         fn = self.getFn(metric)
-        args = {
-            "notify_email": "kfir@panoply.io"
-        }
-        #job_info = fn(**args)
-        url = 'https://s3-us-west-2.amazonaws.com/exports.mandrillapp.com/30874770/activity-2016-12-04_09%3A43%3A42.zip?AWSAccessKeyId=AKIAIQ6QCLKVCWDPU5IA&Expires=1481449502&Signature=bIYQOXI3SOBp%2Fi95522WbsAZdQU%3D'
+        job_info = fn()
+        url = None
 
         # TODO: add an auto stop after some hours
         @reportProgress
