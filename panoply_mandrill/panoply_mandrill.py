@@ -74,6 +74,8 @@ class PanoplyMandrill(panoply.DataSource):
             handler = partial(self.handleRegular, metric)
 
         result = handler()
+        self.log('result length is:', len(result));
+        time.sleep(30)
         # add type and key to each row
         result = [dict(type=metric["name"], key=self.key, **row) for row in result]
         self.metrics.pop(0)
@@ -154,7 +156,4 @@ class PanoplyMandrill(panoply.DataSource):
                 results.append(row.copy())
         finally:
             tmp_file.close()
-        for row in results:
-            self.log(row)
-            time.sleep(10)
         return results
