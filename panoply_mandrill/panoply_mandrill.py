@@ -12,6 +12,7 @@ DAY = 24 * HOUR
 DAY_RANGE = conf.DAY_RANGE
 DESTINATION = "mandrill_{type}"
 IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}"
+SLEEP_TIME_SECONDS = 1
 
 def mergeDicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
@@ -109,5 +110,13 @@ class PanoplyMandrill(panoply.DataSource):
         args = {
             "notify_email": "kfir@panoply.io"
         }
-        fn(**args)
+        job_info = fn(**args)
+        url = None
+        while not url:
+            job_status = self.mandrill_client.exports.info(id=job_info.get('id'))
+            if (job_status.get('result_url')):
+                url = job_status.get('result_url')
+                break
+            time.sleep(SLEEP_TIME_SECONDS)
+        print 'WOWOWOWOWOWOWOWOWOWOW URL:', url
         return []
