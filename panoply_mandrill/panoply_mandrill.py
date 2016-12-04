@@ -145,7 +145,7 @@ class PanoplyMandrill(panoply.DataSource):
         with open('testtest.zip', 'wb') as fp:
             shutil.copyfileobj(req, fp, COPY_CHUNK_SIZE)
         zf = zipfile.ZipFile('testtest.zip')
-        csv_reader = csv.reader(zf.open('activity.csv'), delimiter=',')
+        csv_reader = csv.DictReader(zf.open('activity.csv'), delimiter=',')
         count = 0
         for row in csv_reader:
             count += 1
