@@ -3,6 +3,8 @@ import conf
 import copy
 import time
 import shutil
+import zipfile
+import csv
 from functools import partial
 from itertools import chain
 from mandrill import Mandrill
@@ -139,8 +141,15 @@ class PanoplyMandrill(panoply.DataSource):
             return []
         
         # now we have the url to download from
-        self.log('URL IS:', url)
         req = urlopen(url)
-        with open('testtest', 'wb') as fp:
+        with open('testtest.zip', 'wb') as fp:
             shutil.copyfileobj(req, fp, COPY_CHUNK_SIZE)
+        zf = zipfile.ZipFile('testtest.zip')
+        csv_reader = csv.reader(zf.open('activity.csv'), delimiter=',')
+        count = 0
+        for row in csv_reader:
+            count += 1
+            self.log('ROW IS:', row)
+            if count > 10:
+                break
         return []
