@@ -142,6 +142,8 @@ class PanoplyMandrill(panoply.DataSource):
         
         # now we have the url to download from
         req = urlopen(url)
+        with open('testtest.zip', 'wb') as fp:
+            shutil.copyfileobj(req, fp, COPY_CHUNK_SIZE)
         zf = zipfile.ZipFile(req)
         csv_reader = csv.DictReader(zf.open('activity.csv'), delimiter=',')
         count = 0
