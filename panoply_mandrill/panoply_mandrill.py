@@ -144,6 +144,7 @@ class PanoplyMandrill(panoply.DataSource):
         
         # now we have the url to download from
         req = urlopen(url)
+        result = []
         tmp_file = tempfile.NamedTemporaryFile(delete=True)
         try:
             shutil.copyfileobj(req, tmp_file, COPY_CHUNK_SIZE)
@@ -151,10 +152,7 @@ class PanoplyMandrill(panoply.DataSource):
             csv_reader = csv.DictReader(zf.open(CSV_FILE_NAME), delimiter=',')
             count = 0
             for row in csv_reader:
-                count += 1
-                self.log('ROW IS:', row)
-                if count > 10:
-                    break
+                result.append(row)
         finally:
             tmp_file.close()
-        return []
+        return result
