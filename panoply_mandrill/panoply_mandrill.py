@@ -19,6 +19,7 @@ DESTINATION = "mandrill_{type}"
 IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}"
 SLEEP_TIME_SECONDS = 20
 COPY_CHUNK_SIZE = 16 * 1024
+CSV_FILE_NAME = "activity.csv"
 
 def mergeDicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
@@ -143,12 +144,11 @@ class PanoplyMandrill(panoply.DataSource):
         
         # now we have the url to download from
         req = urlopen(url)
-        tmp = tempfile.NamedTemporaryFile(delete=True)
+        tmp_file = tempfile.NamedTemporaryFile(delete=True)
         try:
-            with open(tmp, 'wb') as fp:
-                shutil.copyfileobj(req, fp, COPY_CHUNK_SIZE)
+            shutil.copyfileobj(req, tmp_file, COPY_CHUNK_SIZE)
             zf = zipfile.ZipFile(req)
-            csv_reader = csv.DictReader(zf.open('activity.csv'), delimiter=',')
+            csv_reader = csv.DictReader(zf.open(CSV_FILE_NAME), delimiter=',')
             count = 0
             for row in csv_reader:
                 count += 1
@@ -156,5 +156,5 @@ class PanoplyMandrill(panoply.DataSource):
                 if count > 10:
                     break
         finally:
-            tmp.close()
+            tmp_file.close()
         return []
