@@ -118,5 +118,5 @@ class PanoplyMandrill(panoply.DataSource):
                 url = job_status.get('result_url')
                 break
             time.sleep(SLEEP_TIME_SECONDS)
-        print 'WOWOWOWOWOWOWOWOWOWOW URL:', url
+        self.log('WOWOWOWOWOWOWOWOWOWOW URL:', url)
         return []
