@@ -147,7 +147,7 @@ class PanoplyMandrill(panoply.DataSource):
         tmp_file = tempfile.NamedTemporaryFile(delete=True)
         try:
             shutil.copyfileobj(req, tmp_file, COPY_CHUNK_SIZE)
-            zf = zipfile.ZipFile(req)
+            zf = zipfile.ZipFile(tmp_file)
             csv_reader = csv.DictReader(zf.open(CSV_FILE_NAME), delimiter=',')
             count = 0
             for row in csv_reader:
