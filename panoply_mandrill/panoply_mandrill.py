@@ -155,4 +155,5 @@ class PanoplyMandrill(panoply.DataSource):
         finally:
             tmp_file.close()
         self.log('results are:', results)
+        time.sleep(30)
         return results
