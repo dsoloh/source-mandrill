@@ -12,7 +12,7 @@ DAY = 24 * HOUR
 DAY_RANGE = conf.DAY_RANGE
 DESTINATION = "mandrill_{type}"
 IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}"
-SLEEP_TIME_SECONDS = 1
+SLEEP_TIME_SECONDS = 20
 
 def mergeDicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
