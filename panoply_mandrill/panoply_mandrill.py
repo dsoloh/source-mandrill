@@ -74,10 +74,10 @@ class PanoplyMandrill(panoply.DataSource):
             handler = partial(self.handleRegular, metric)
 
         result = handler()
-        self.log('result length is:', len(result));
-        time.sleep(30)
         # add type and key to each row
         result = [dict(type=metric["name"], key=self.key, **row) for row in result]
+        self.log('result length is is:', len(result))
+        time.sleep(30)
         self.metrics.pop(0)
         return result
     
