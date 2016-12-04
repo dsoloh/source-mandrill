@@ -151,7 +151,7 @@ class PanoplyMandrill(panoply.DataSource):
             zf = zipfile.ZipFile(tmp_file)
             csv_reader = csv.DictReader(zf.open(CSV_FILE_NAME), delimiter=',')
             for row in csv_reader:
-                results.append(row)
+                results.append(row.copy())
         finally:
             tmp_file.close()
-        return results[2:11]
+        return results
