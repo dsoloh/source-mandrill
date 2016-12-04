@@ -12,11 +12,11 @@ metrics = [
         "path":"all_time_series"
     },
 
-    {
-        "name":"senders",
-        "path":"time_series",
-        "required":"address",
-    },
+    #{
+    #    "name":"senders",
+    #    "path":"time_series",
+    #    "required":"address",
+    #},
 
     {
         "name":"urls",
