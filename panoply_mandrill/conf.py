@@ -1,6 +1,7 @@
 DAY_RANGE = 30 # The range of days to import data from
 
 metrics = [
+    '''
     {
         "name":"messages",
         "path":"search_time_series",
@@ -12,11 +13,11 @@ metrics = [
         "path":"all_time_series"
     },
 
-    #{
-    #    "name":"senders",
-    #    "path":"time_series",
-    #    "required":"address",
-    #},
+    {
+        "name":"senders",
+        "path":"time_series",
+        "required":"address",
+    },
 
     {
         "name":"urls",
@@ -38,7 +39,7 @@ metrics = [
     {
         "name":"subaccounts",
         "path":"list"
-    },
+    },'''
     # it is very important to leave the exports metric as the last metric
     # since it can take a long time for it to resolve
     {
