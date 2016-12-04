@@ -16,7 +16,7 @@ HOUR = 60 * MINUTE
 DAY = 24 * HOUR
 DAY_RANGE = conf.DAY_RANGE
 DESTINATION = "mandrill_{type}"
-IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}"
+IDPATTERN = "{time}-{date}-{key}-{type}-{name}-{address}-{email address}-{url}"
 SLEEP_TIME_SECONDS = 20
 COPY_CHUNK_SIZE = 16 * 1024
 CSV_FILE_NAME = "activity.csv"
@@ -76,8 +76,6 @@ class PanoplyMandrill(panoply.DataSource):
         result = handler()
         # add type and key to each row
         result = [dict(type=metric["name"], key=self.key, **row) for row in result]
-        self.log('result length is is:', len(result))
-        time.sleep(30)
         self.metrics.pop(0)
         return result
     
@@ -153,7 +151,7 @@ class PanoplyMandrill(panoply.DataSource):
             zf = zipfile.ZipFile(tmp_file)
             csv_reader = csv.DictReader(zf.open(CSV_FILE_NAME), delimiter=',')
             for row in csv_reader:
-                results.append(row.copy())
+                results.append(row)
         finally:
             tmp_file.close()
         return results
