@@ -2,9 +2,11 @@ import panoply
 import conf
 import copy
 import time
+import shutil
 from functools import partial
 from itertools import chain
 from mandrill import Mandrill
+from urllib2 import urlopen
 
 MINUTE = 60
 HOUR = 60 * MINUTE
@@ -13,6 +15,7 @@ DAY_RANGE = conf.DAY_RANGE
 DESTINATION = "mandrill_{type}"
 IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}"
 SLEEP_TIME_SECONDS = 20
+COPY_CHUNK_SIZE = 16 * 1024
 
 def mergeDicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
@@ -110,19 +113,34 @@ class PanoplyMandrill(panoply.DataSource):
         args = {
             "notify_email": "kfir@panoply.io"
         }
-        job_info = fn(**args)
-        url = None
+        #job_info = fn(**args)
+        url = 'https://s3-us-west-2.amazonaws.com/exports.mandrillapp.com/30874770/activity-2016-12-04_09%3A43%3A42.zip?AWSAccessKeyId=AKIAIQ6QCLKVCWDPU5IA&Expires=1481449502&Signature=bIYQOXI3SOBp%2Fi95522WbsAZdQU%3D'
 
+        # TODO: add an auto stop after some hours
         @reportProgress
         def wait_for_job(self):
-            '''report progress is expecting self to be the first param'''
+            '''
+            Report progress is expecting self to be the first param.
+            Will return the url on success or False on fail
+            '''
             job_status = self.mandrill_client.exports.info(id=job_info.get('id'))
             if (job_status.get('result_url')):
                 return job_status.get('result_url')
+            status = job_status.get('status')
+            if (status == 'error' or status == 'expired'):
+                self.log('WARN: export job status was:', status);
+                return False
             time.sleep(SLEEP_TIME_SECONDS)
 
-        while not url:
+        while url is None:
             url = wait_for_job(self)
-
-        self.log('WOWOWOWOWOWOWOWOWOWOW URL:', url)
+        # check that we didn't fail
+        if url == False:
+            return []
+        
+        # now we have the url to download from
+        self.log('URL IS:', url)
+        req = urlopen(url)
+        with open('testtest', 'wb') as fp:
+            shutil.copyfileobj(req, fp, COPY_CHUNK_SIZE)
         return []
