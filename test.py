@@ -22,12 +22,6 @@ class TestMandrill(unittest.TestCase):
         real_metrics = self.orig_metrics
         urllib2.urlopen = self.orig_urlopen
 
-    def test_defaults(self):
-        source = {"key":"MandrillKey"}
-        PanoplyMandrill(source, OPTIONS)
-        self.assertEqual(source["idpattern"], IDPATTERN)
-        self.assertEqual(source["destination"], DESTINATION)
-
     def test_simple_request(self):
         real_metrics = [{ 
             "name":"metric",

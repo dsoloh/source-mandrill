@@ -6,6 +6,7 @@ import tempfile
 import shutil
 import zipfile
 import csv
+from datetime import datetime
 from functools import partial
 from itertools import chain
 from mandrill import Mandrill
@@ -49,7 +50,17 @@ class PanoplyMandrill(panoply.DataSource):
         source["idpattern"] = source.get("idpattern") or IDPATTERN
 
         fromsec = int(time.time() - (DAY_RANGE * DAY))
-        self.fromTime, self.toTime = formatTime(time.gmtime(fromsec)), formatTime(time.gmtime())
+
+        if source.get('lastTimeSucceed'):
+            # ignore all errors
+            try:
+                date = source.get('lastTimeSucceed').split("T")[0]
+                time_struct = datetime.strptime(date, "%Y-%m-%d").timetuple()
+                self.fromTime = formatTime(time_struct)
+            except:
+                pass
+        self.fromTime = self.fromTime or formatTime(time.gmtime(fromsec))
+        self.toTime = formatTime(time.gmtime())
         self.metrics = copy.deepcopy(conf.metrics)
         self.total = len(self.metrics)
         self.key = source.get('key')
