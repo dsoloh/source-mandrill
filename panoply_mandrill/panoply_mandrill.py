@@ -7,7 +7,7 @@ import shutil
 import zipfile
 import csv
 from datetime import datetime
-from functools import partial
+from functools import partial, wraps
 from itertools import chain
 from mandrill import Mandrill
 from urllib2 import urlopen
@@ -30,6 +30,7 @@ def mergeDicts(x, y):
 
 def reportProgress(fn):
     '''decorator for auto progress report'''
+    @wraps(fn)
     def wrapper(self, *args, **kwargs):
         result = fn(self, *args, **kwargs)
         loaded = self.total - len(self.metrics)
