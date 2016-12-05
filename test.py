@@ -57,5 +57,26 @@ class TestMandrill(unittest.TestCase):
         self.assertEqual(result_b, [])
         self.assertEqual(result_c, None)
 
+    def test_required_metric(self):
+        metrics = [{ 
+            "name":"senders",
+            "path":"time_series",
+            "required":"address",
+            "category": "senders"
+        }]
+        res = [
+            {"address": "a@a.a"},
+            {"address": "b@b.b"}
+        ]
+        self.stream.metrics = metrics
+        self.stream.mandrill_client.senders.list = MagicMock(return_value=res)
+        self.stream.mandrill_client.senders.time_series = MagicMock()
+        self.stream.read()
+
+        # last call was the last address
+        self.stream.mandrill_client.senders.time_series.assert_called_with(address="b@b.b")
+        # called twice (one time for each address)
+        self.assertEqual(self.stream.mandrill_client.senders.time_series.call_count, 2)
+
 if __name__ == "__main__":
     unittest.main()
