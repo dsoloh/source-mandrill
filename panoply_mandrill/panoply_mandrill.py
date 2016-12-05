@@ -55,7 +55,6 @@ class PanoplyMandrill(panoply.DataSource):
         self.key = source.get('key')
         self.mandrill_client = Mandrill(self.key)
         # will raise InvalidKeyError if the api key is wrong
-        raise Exception('test')
         self.mandrill_client.users.ping()
 
     @reportProgress
