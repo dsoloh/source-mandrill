@@ -39,7 +39,7 @@ metrics = [
         "name":"subaccounts",
         "path":"list"
     },
-    # it is very important to leave the exports metric as the last metric
+    # it is preferable to leave the exports metric as the last metric
     # since it can take a long time for it to resolve
     {
         "name":"exports",
