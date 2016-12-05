@@ -50,7 +50,7 @@ class PanoplyMandrill(panoply.DataSource):
         source["idpattern"] = source.get("idpattern") or IDPATTERN
 
         fromsec = int(time.time() - (DAY_RANGE * DAY))
-
+        self.fromTime = None
         if source.get('lastTimeSucceed'):
             # ignore all errors
             try:
