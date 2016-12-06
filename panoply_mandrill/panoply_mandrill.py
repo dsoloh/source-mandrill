@@ -93,7 +93,13 @@ class PanoplyMandrill(panoply.DataSource):
     
     def getFn(self, metric, path=None):
         '''dynamically locate the right function to call from the sdk.'''
-        fn = getattr(getattr(self.mandrill_client, metric['category']), path or metric['path'])
+        # will find the right category in the sdk for example:
+        # client.exports.activity -> exports is the category
+        fn_category = getattr(self.mandrill_client, metric['category'])
+        # will get the function from the category for example:
+        # client.exports.activity -> activity is the function
+        fn = getattr(fn_category, path or metric['path'])
+        # not all functions have a date_from/to fields
         if metric.get('includeTimeframe'):
             fn = partial(fn, date_from=self.fromTime, date_to=self.toTime)
         return fn
