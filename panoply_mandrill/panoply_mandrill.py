@@ -79,13 +79,13 @@ class PanoplyMandrill(panoply.DataSource):
         required_field = metric.get("required")
         handler = lambda: None
         if required_field:
-            handler = partial(self.handleRequired, metric, required_field)
+            handler = partial(self.handleRequired, required_field=required_field)
         elif metric.get('category') == 'exports':
-            handler = partial(self.handleExport, metric)
+            handler = self.handleExport
         else:
-            handler = partial(self.handleRegular, metric)
+            handler = self.handleRegular
 
-        result = handler()
+        result = handler(metric)
         # add type and key to each row
         result = [dict(type=metric["name"], key=self.key, **row) for row in result]
         self.metrics.pop(0)
