@@ -78,5 +78,22 @@ class TestMandrill(unittest.TestCase):
         # called twice (one time for each address)
         self.assertEqual(self.stream.mandrill_client.senders.time_series.call_count, 2)
 
+    def test_export_metric(self):
+        metrics = [{ 
+            "name":"exports",
+            "path":"activity",
+            "category": "exports"
+        }]
+        self.stream.metrics = metrics
+        self.stream.mandrill_client.exports.activity = MagicMock()
+        res = {
+            # this file has 2 rows of data
+            "result_url": "https://s3.amazonaws.com/panoply-build-assets/mandrilltest/activity.csv.zip"
+        }
+        self.stream.mandrill_client.exports.info = MagicMock(return_value=res)
+        result = self.stream.read()
+        
+        self.assertEqual(len(result), 2)
+
 if __name__ == "__main__":
     unittest.main()
