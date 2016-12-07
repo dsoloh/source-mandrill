@@ -40,26 +40,20 @@ def reportProgress(fn):
     return wrapper
 
 def formatTime(struct_time, format="%Y-%m-%d"):
-    return time.strftime(format, struct_time)
+    return time.strftime(format, struct_time) 
 
 class PanoplyMandrill(panoply.DataSource):
 
     def __init__(self, source, opt):
         super(PanoplyMandrill, self).__init__(source, opt)
 
+        self.source = source
         source["destination"] = source.get("destination") or DESTINATION
         source["idpattern"] = source.get("idpattern") or IDPATTERN
 
         fromsec = int(time.time() - (DAY_RANGE * DAY))
         self.fromTime = None
-        if source.get('lastTimeSucceed'):
-            # ignore all errors
-            try:
-                date = source.get('lastTimeSucceed').split("T")[0]
-                time_struct = datetime.strptime(date, "%Y-%m-%d").timetuple()
-                self.fromTime = formatTime(time_struct)
-            except:
-                pass
+        self.applyLastTimeSucceed()
         self.fromTime = self.fromTime or formatTime(time.gmtime(fromsec))
         self.toTime = formatTime(time.gmtime())
         self.metrics = copy.deepcopy(conf.metrics)
@@ -68,6 +62,18 @@ class PanoplyMandrill(panoply.DataSource):
         self.mandrill_client = Mandrill(self.key)
         # will raise InvalidKeyError if the api key is wrong
         self.mandrill_client.users.ping()
+    
+    def applyLastTimeSucceed(self):
+        '''if lastTimeSucceed exists, use it as fromTime'''
+        if not self.source.get('lastTimeSucceed'):
+            return
+        # ignore all errors
+        try:
+            date = self.source.get('lastTimeSucceed').split("T")[0]
+            time_struct = datetime.strptime(date, "%Y-%m-%d").timetuple()
+            self.fromTime = formatTime(time_struct)
+        except:
+            pass
 
     @reportProgress
     def read(self, n = None):
