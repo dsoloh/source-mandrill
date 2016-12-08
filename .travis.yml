@@ -12,3 +12,4 @@ install:
 # Each step below must succeed for the build to pass
 script:
     - python ./test.py
+# test
