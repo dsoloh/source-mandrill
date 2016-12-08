@@ -94,6 +94,6 @@ class TestMandrill(unittest.TestCase):
         result = self.stream.read()
         
         self.assertEqual(len(result), 2)
-# just force commit
+
 if __name__ == "__main__":
     unittest.main()
