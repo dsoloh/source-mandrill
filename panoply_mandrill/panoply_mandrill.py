@@ -54,6 +54,7 @@ class PanoplyMandrill(panoply.DataSource):
 
         fromsec = int(time.time() - (DAY_RANGE * DAY))
         self.fromTime = self.getLastTimeSucceed(source) or formatTime(time.gmtime(fromsec))
+        self.log('TimeTimeTime', self.fromTime)
         self.toTime = formatTime(time.gmtime())
         self.metrics = copy.deepcopy(conf.metrics)
         self.total = len(self.metrics)
