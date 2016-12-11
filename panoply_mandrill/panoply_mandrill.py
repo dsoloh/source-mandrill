@@ -21,6 +21,7 @@ IDPATTERN = "{time}-{date}-{key}-{type}-{name}-{address}-{email address}-{url}"
 SLEEP_TIME_SECONDS = 20
 COPY_CHUNK_SIZE = 16 * 1024
 CSV_FILE_NAME = "activity.csv"
+MAX_EXTRACTED_FIELDS = 150
 
 def mergeDicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
@@ -115,7 +116,8 @@ class PanoplyMandrill(panoply.DataSource):
         list_fn = self.getFn(metric, 'list')
         # extract only the required field from each object in the result array
         extracted_fields = [row.get(required_field) for row in list_fn() if row.get(required_field)]
-        self.log('BLABLABLA:', len(extracted_fields), 'DONE')
+        # take up to MAX_EXTRACTED_FIELDS from the extracted_fields discovered
+        extracted_fields = extracted_fields[:MAX_EXTRACTED_FIELDS]
         fn = self.getFn(metric)
         # for each field we have (for example each email we got from the list call)
         # do an api call on that field
