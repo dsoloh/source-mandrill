@@ -80,15 +80,11 @@ class PanoplyMandrill(panoply.DataSource):
             return None # No more data to consume
         metric = self.metrics[0]
 
-        # if we should pop the current metric
-        pop = True
         # choose the right handler for this metric
         required_field = metric.get("required")
         handler = lambda: None
         if self.ongoingJob:
             handler = self.handleOngoing
-            # do not pop since we are stil handling the previous job
-            pop = False
         elif required_field:
             handler = partial(self.handleRequired, metric, required_field)
         elif metric.get('name') == 'exports':
@@ -99,7 +95,8 @@ class PanoplyMandrill(panoply.DataSource):
         result = handler()
         # add type and key to each row
         result = [dict(type=metric["name"], key=self.key, **row) for row in result]
-        if pop:
+        # only pop when we are not in an ongoingJob
+        if not self.ongoingJob:
             self.metrics.pop(0)
         return result
     
@@ -168,7 +165,8 @@ class PanoplyMandrill(panoply.DataSource):
         }
         # will periodically process the extracted fields
         self.setOngoingJob(data)
-        return []
+        # return the 1st batch
+        return self.processExtracted(data)
     
     def handleRegular(self, metric):
         '''for your everyday metric.'''

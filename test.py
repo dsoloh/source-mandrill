@@ -2,7 +2,8 @@ import unittest
 
 from mock import MagicMock
 from mandrill import Users
-from panoply_mandrill import PanoplyMandrill
+from panoply_mandrill import PanoplyMandrill, EXTRACTED_FIELDS_BATCH_SIZE
+import math
 
 OPTIONS = {
     "logger": lambda *args: None # don't log on test 
@@ -77,6 +78,24 @@ class TestMandrill(unittest.TestCase):
         self.stream.mandrill_client.senders.time_series.assert_called_with(address="b@b.b")
         # called twice (one time for each address)
         self.assertEqual(self.stream.mandrill_client.senders.time_series.call_count, 2)
+    
+    def test_batched_required_metric(self):
+        SIZE_TO_CHECK = EXTRACTED_FIELDS_BATCH_SIZE * 3 + 5
+        metrics = [{ 
+            "name":"senders",
+            "path":"time_series",
+            "required":"address",
+            "category": "senders"
+        }]
+        res = [{"address": "a@a.a"} for i in xrange(SIZE_TO_CHECK)]
+        self.stream.metrics = metrics
+        self.stream.mandrill_client.senders.list = MagicMock(return_value=res)
+        self.stream.mandrill_client.senders.time_series = MagicMock()
+        for i in range(int(math.ceil(SIZE_TO_CHECK / float(EXTRACTED_FIELDS_BATCH_SIZE)))):
+            self.stream.read()
+
+        # called SIZE_TO_CHECK times (one time for each address)
+        self.assertEqual(self.stream.mandrill_client.senders.time_series.call_count, SIZE_TO_CHECK)
 
     def test_export_metric(self):
         metrics = [{ 
