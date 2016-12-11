@@ -57,6 +57,7 @@ class PanoplyMandrill(panoply.DataSource):
         self.metrics = copy.deepcopy(conf.metrics)
         self.total = len(self.metrics)
         self.key = source.get('key')
+        self.ongoingJob = None
         self.mandrill_client = Mandrill(self.key)
         # will raise InvalidKeyError if the api key is wrong
         self.mandrill_client.users.ping()
@@ -79,20 +80,27 @@ class PanoplyMandrill(panoply.DataSource):
             return None # No more data to consume
         metric = self.metrics[0]
 
+        # if we should pop the current metric
+        pop = True
         # choose the right handler for this metric
         required_field = metric.get("required")
         handler = lambda: None
-        if required_field:
-            handler = partial(self.handleRequired, required_field=required_field)
+        if self.ongoingJob:
+            handler = self.handleOngoing
+            # do not pop since we are stil handling the previous job
+            pop = False
+        elif required_field:
+            handler = partial(self.handleRequired, metric, required_field)
         elif metric.get('name') == 'exports':
-            handler = self.handleExport
+            handler = partial(self.handleExport, metric)
         else:
-            handler = self.handleRegular
+            handler = partial(self.handleRegular, metric)
 
-        result = handler(metric)
+        result = handler()
         # add type and key to each row
         result = [dict(type=metric["name"], key=self.key, **row) for row in result]
-        self.metrics.pop(0)
+        if pop:
+            self.metrics.pop(0)
         return result
     
     def getFn(self, metric, path=None):
@@ -108,11 +116,21 @@ class PanoplyMandrill(panoply.DataSource):
             fn = partial(fn, date_from=self.fromTime, date_to=self.toTime)
         return fn
     
-    def processExtracted(self, **data):
+    def setOngoingJob(self, data):
+        self.ongoingJob = data
+
+    def stopOngoingJob(self):
+        self.ongoingJob = None
+
+    def processExtracted(self, data):
         '''process and return the extracted_fields given'''
         metric = data.get('metric')
-        extracted_fields = data.get('extracted_fields')
+        extracted_fields = data.get('extracted_fields', [])[:EXTRACTED_FIELDS_BATCH_SIZE]
         required_field = data.get('required_field')
+        # if finished the extracted_fields we can stop this ongoing job
+        if (len(extracted_fields) == 0):
+            self.stopOngoingJob()
+            return []
         fn = self.getFn(metric)
         results = []
         # for each field we have (for example each email we got from the list call)
@@ -126,9 +144,17 @@ class PanoplyMandrill(panoply.DataSource):
             # the info is the param dict itself (for example adding address: 'blabla@a.a')
             result = [mergeDicts(param_dict, response_obj) for response_obj in fn(**param_dict)]
             results.append(result)
+        # reduce the batch for the next callable
+        data['extracted_fields'] = data.get('extracted_fields', [])[EXTRACTED_FIELDS_BATCH_SIZE:]
+        self.setOngoingJob(data)
         # flatten the results (which are a list of lists) into flat list
         return list(chain.from_iterable(results))
 
+    def handleOngoing(self):
+        '''will handle a job that is working in batches'''
+        fn = self.ongoingJob.get('function')
+        return fn(self.ongoingJob)
+        
     def handleRequired(self, metric, required_field):
         '''for metrics that would need an extra api call before they can work.'''
         list_fn = self.getFn(metric, 'list')
@@ -137,9 +163,12 @@ class PanoplyMandrill(panoply.DataSource):
         data = {
             'metric': metric,
             'extracted_fields': extracted_fields,
-            'required_field': required_field
+            'required_field': required_field,
+            'function': self.processExtracted
         }
-        return self.processExtracted(**data)
+        # will periodically process the extracted fields
+        self.setOngoingJob(data)
+        return []
     
     def handleRegular(self, metric):
         '''for your everyday metric.'''
