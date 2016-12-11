@@ -21,7 +21,7 @@ IDPATTERN = "{time}-{date}-{key}-{type}-{name}-{address}-{email address}-{url}"
 SLEEP_TIME_SECONDS = 20
 COPY_CHUNK_SIZE = 16 * 1024
 CSV_FILE_NAME = "activity.csv"
-MAX_EXTRACTED_FIELDS = 150
+EXTRACTED_FIELDS_BATCH_SIZE = 50
 
 def mergeDicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
@@ -108,18 +108,13 @@ class PanoplyMandrill(panoply.DataSource):
             fn = partial(fn, date_from=self.fromTime, date_to=self.toTime)
         return fn
     
-    def handleRequired(self, metric, required_field):
-        '''for metrics that would need an extra api call before they can work.'''
-        list_fn = self.getFn(metric, 'list')
-        # extract only the required field from each object in the result array
-        extracted_fields = [row.get(required_field) for row in list_fn() if row.get(required_field)]
-        # take up to MAX_EXTRACTED_FIELDS from the extracted_fields discovered
-        extracted_fields = extracted_fields[:MAX_EXTRACTED_FIELDS]
+    def processExtracted(self, metric, extracted_fields):
+        '''process and return the extracted_fields given'''
         fn = self.getFn(metric)
+        results = []
         # for each field we have (for example each email we got from the list call)
         # do an api call on that field
         # for example mandrill_client.senders.time_series(address='someUnique@email.com')
-        results = []
         for field in extracted_fields:
             # dynamically choose the paramater to send to the function
             param_dict = {required_field: field}
@@ -130,6 +125,13 @@ class PanoplyMandrill(panoply.DataSource):
             results.append(result)
         # flatten the results (which are a list of lists) into flat list
         return list(chain.from_iterable(results))
+
+    def handleRequired(self, metric, required_field):
+        '''for metrics that would need an extra api call before they can work.'''
+        list_fn = self.getFn(metric, 'list')
+        # extract only the required field from each object in the result array
+        extracted_fields = [row.get(required_field) for row in list_fn() if row.get(required_field)]
+        return self.processExtracted(metric, extracted_fields)
     
     def handleRegular(self, metric):
         '''for your everyday metric.'''
