@@ -56,6 +56,7 @@ class PanoplyMandrill(panoply.DataSource):
         self.fromTime = None
         self.applyLastTimeSucceed()
         self.fromTime = self.fromTime or formatTime(time.gmtime(fromsec))
+        self.log('FROM TIME IS:', self.fromTime)
         self.toTime = formatTime(time.gmtime())
         self.metrics = copy.deepcopy(conf.metrics)
         self.total = len(self.metrics)
@@ -74,6 +75,7 @@ class PanoplyMandrill(panoply.DataSource):
             time_struct = datetime.strptime(date, "%Y-%m-%d").timetuple()
             self.fromTime = formatTime(time_struct)
         except:
+            self.log('WOWOWOWWOWWOWWOW');
             pass
 
     @reportProgress
