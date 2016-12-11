@@ -47,6 +47,3 @@ metrics = [
         "includeTimeframe": True
     }
 ]
-# add a default category which equals to the name if category was not specified
-metrics = [dict(category=metric.pop('category', metric.get('name')), **metric) for metric in metrics]
-
