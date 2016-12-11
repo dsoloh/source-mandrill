@@ -48,7 +48,6 @@ class PanoplyMandrill(panoply.DataSource):
     def __init__(self, source, opt):
         super(PanoplyMandrill, self).__init__(source, opt)
 
-        self.source = source
         source["destination"] = source.get("destination") or DESTINATION
         source["idpattern"] = source.get("idpattern") or IDPATTERN
 
