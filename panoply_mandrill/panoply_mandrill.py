@@ -55,6 +55,7 @@ class PanoplyMandrill(panoply.DataSource):
         fromsec = int(time.time() - (DAY_RANGE * DAY))
         self.fromTime = None
         self.applyLastTimeSucceed()
+        self.log('Why From Time:', self.fromTime)
         self.fromTime = self.fromTime or formatTime(time.gmtime(fromsec))
         self.log('FROM TIME IS:', self.fromTime)
         self.toTime = formatTime(time.gmtime())
@@ -75,7 +76,6 @@ class PanoplyMandrill(panoply.DataSource):
             time_struct = datetime.strptime(date, "%Y-%m-%d").timetuple()
             self.fromTime = formatTime(time_struct)
         except:
-            self.log('WOWOWOWWOWWOWWOW');
             pass
 
     @reportProgress
