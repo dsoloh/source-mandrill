@@ -115,6 +115,7 @@ class PanoplyMandrill(panoply.DataSource):
         list_fn = self.getFn(metric, 'list')
         # extract only the required field from each object in the result array
         extracted_fields = [row.get(required_field) for row in list_fn() if row.get(required_field)]
+        self.log('BLABLABLA:', len(extracted_fields, 'DONE'))
         fn = self.getFn(metric)
         # for each field we have (for example each email we got from the list call)
         # do an api call on that field
