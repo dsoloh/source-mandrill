@@ -53,11 +53,7 @@ class PanoplyMandrill(panoply.DataSource):
         source["idpattern"] = source.get("idpattern") or IDPATTERN
 
         fromsec = int(time.time() - (DAY_RANGE * DAY))
-        self.fromTime = None
-        self.applyLastTimeSucceed()
-        self.log('Why From Time:', self.fromTime)
-        self.fromTime = self.fromTime or formatTime(time.gmtime(fromsec))
-        self.log('FROM TIME IS:', self.fromTime)
+        self.fromTime = self.getLastTimeSucceed(source) or formatTime(time.gmtime(fromsec))
         self.toTime = formatTime(time.gmtime())
         self.metrics = copy.deepcopy(conf.metrics)
         self.total = len(self.metrics)
@@ -66,20 +62,17 @@ class PanoplyMandrill(panoply.DataSource):
         # will raise InvalidKeyError if the api key is wrong
         self.mandrill_client.users.ping()
 
-    def applyLastTimeSucceed(self):
+    def getLastTimeSucceed(self, source):
         '''if lastTimeSucceed exists, use it as fromTime'''
-        if not self.source.get('lastTimeSucceed'):
-            self.log('No Time No Succeed', self.source)
-            return
+        if not source.get('lastTimeSucceed'):
+            return None
         # ignore all errors
         try:
-            date = self.source.get('lastTimeSucceed').split("T")[0]
+            date = source.get('lastTimeSucceed').split("T")[0]
             time_struct = datetime.strptime(date, "%Y-%m-%d").timetuple()
-            self.log('I Am Here! this is the struct:', time_struct)
-            self.fromTime = formatTime(time_struct)
+            return formatTime(time_struct)
         except:
-            self.log('Are you sure about that?');
-            pass
+            return None
 
     @reportProgress
     def read(self, n = None):
