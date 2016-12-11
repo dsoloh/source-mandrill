@@ -69,13 +69,16 @@ class PanoplyMandrill(panoply.DataSource):
     def applyLastTimeSucceed(self):
         '''if lastTimeSucceed exists, use it as fromTime'''
         if not self.source.get('lastTimeSucceed'):
+            self.log('No Time No Succeed')
             return
         # ignore all errors
         try:
             date = self.source.get('lastTimeSucceed').split("T")[0]
             time_struct = datetime.strptime(date, "%Y-%m-%d").timetuple()
+            self.log('I Am Here! this is the struct:', time_struct)
             self.fromTime = formatTime(time_struct)
         except:
+            self.log('Are you sure about that?');
             pass
 
     @reportProgress
