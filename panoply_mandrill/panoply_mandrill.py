@@ -65,11 +65,11 @@ class PanoplyMandrill(panoply.DataSource):
         self.mandrill_client = Mandrill(self.key)
         # will raise InvalidKeyError if the api key is wrong
         self.mandrill_client.users.ping()
-    
+
     def applyLastTimeSucceed(self):
         '''if lastTimeSucceed exists, use it as fromTime'''
         if not self.source.get('lastTimeSucceed'):
-            self.log('No Time No Succeed')
+            self.log('No Time No Succeed', self.source)
             return
         # ignore all errors
         try:
