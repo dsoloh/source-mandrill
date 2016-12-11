@@ -108,8 +108,11 @@ class PanoplyMandrill(panoply.DataSource):
             fn = partial(fn, date_from=self.fromTime, date_to=self.toTime)
         return fn
     
-    def processExtracted(self, metric, extracted_fields):
+    def processExtracted(self, **data):
         '''process and return the extracted_fields given'''
+        metric = data.get('metric')
+        extracted_fields = data.get('extracted_fields')
+        required_field = data.get('required_field')
         fn = self.getFn(metric)
         results = []
         # for each field we have (for example each email we got from the list call)
@@ -131,7 +134,12 @@ class PanoplyMandrill(panoply.DataSource):
         list_fn = self.getFn(metric, 'list')
         # extract only the required field from each object in the result array
         extracted_fields = [row.get(required_field) for row in list_fn() if row.get(required_field)]
-        return self.processExtracted(metric, extracted_fields)
+        data = {
+            'metric': metric,
+            'extracted_fields': extracted_fields,
+            'required_field': required_field
+        }
+        return self.processExtracted(**data)
     
     def handleRegular(self, metric):
         '''for your everyday metric.'''
