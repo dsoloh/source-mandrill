@@ -1,163 +1,118 @@
 import unittest
-import urllib2
-import json
 
-from io import BytesIO
 from mock import MagicMock
-from mandrill import *
+from mandrill import Users
+from panoply_mandrill import PanoplyMandrill, EXTRACTED_FIELDS_BATCH_SIZE
+import math
 
 OPTIONS = {
     "logger": lambda *args: None # don't log on test 
 }
 
+# get rid of the API validation check
+Users.ping = MagicMock()
+
 class TestMandrill(unittest.TestCase):
 
     def setUp(self):
-        self.orig_metrics = conf.metrics
-        self.orig_urlopen = urllib2.urlopen
+        self.stream = PanoplyMandrill({
+            "key": "MandrillKey"
+        }, OPTIONS)
 
     def tearDown(self):
-        conf.metrics = self.orig_metrics
-        urllib2.urlopen = self.orig_urlopen
-
-    def test_defaults(self):
-        source = {"key":"MandrillKey"}
-        Mandrill(source, OPTIONS)
-        self.assertEqual(source["idpattern"], IDPATTERN)
-        self.assertEqual(source["destination"], DESTINATION)
+        pass
 
     def test_simple_request(self):
-        conf.metrics = [{ 
-            "name":"metric",
-            "path": "metric.json"
+        metrics = [{ 
+            "name":"tags",
+            "path": "all_time_series",
+            "category": "tags"
         }]
-        res = BytesIO("[]")
-        urllib2.urlopen = MagicMock(return_value=res)
-        
-        Mandrill({
-            "key":"MandrillKey"
-        }, OPTIONS).read()
-        
-        req, body = urllib2.urlopen.call_args[0]
-        body = json.loads(body)
-        url = conf.BASE_URL + "metric.json"
-        
-        self.assertEqual(req.get_full_url(), url)
-        self.assertEqual(body.get("key"), "MandrillKey")
+        res = [{'test': 'orange'}]
+        self.stream.mandrill_client.tags.all_time_series = MagicMock(return_value=res)
+        self.stream.metrics = metrics
+        result = self.stream.read()[0]
 
-    def test_result(self):
-        conf.metrics = [{
-            "name":"metric",
-            "path":"metric.json"
-        }]
-
-        urlRes = BytesIO(json.dumps([{"hello":"world"}]))
-        urllib2.urlopen = MagicMock(return_value=urlRes)
-        
-        stream = Mandrill({
-            "key":"MandrillKey"
-        }, OPTIONS)
-        result = stream.read()[0]
-        self.assertEqual(result.get("type"), "metric")
-        self.assertEqual(result.get("hello"), "world")
-
+        self.assertEqual(result.get("type"), "tags")
+        self.assertEqual(result.get("key"), "MandrillKey")
+        self.assertEqual(result.get("test"), "orange")
+    
     def test_iterate_metrics(self):
-        conf.metrics = [
-            {
-                "name":"metric1",
-                "path":"metric1.json"
-            },
-            {
-                "name":"metric2",
-                "path":"metric2.json"
-            }
-
-        ]
-        res1, res2 = BytesIO("[]"), BytesIO("[]")
-        urllib2.urlopen = MagicMock(side_effect=[res1, res2])
-
-        stream = Mandrill({
-            "key":"MandrillKey"
-        }, OPTIONS)
-        stream.read()
-        stream.read()
-        self.assertEqual(urllib2.urlopen.call_count, 2)
-
-        # make sure we done
-        isNone = stream.read()
-        self.assertEqual(isNone, None)
-
-    def test_error(self):
-        conf.metrics = [{
-            "name":"metric",
-            "path":"metric.json"
+        metrics = [{ 
+            "name":"tags",
+            "path": "all_time_series",
+            "category": "tags"
+        }, {
+            "name":"webhooks",
+            "path": "list",
+            "category": "webhooks" 
         }]
-        res = BytesIO(json.dumps({
-            "status":"error",
-            "code": -1,
-            "name":"invalid_key",
-            "message":"invalid API key"
-        }))
+        self.stream.mandrill_client.tags.all_time_series = MagicMock(return_value=[])
+        self.stream.mandrill_client.webhooks.list = MagicMock(return_value=[])
+        self.stream.metrics = metrics
+        result_a = self.stream.read()
+        result_b = self.stream.read()
+        result_c = self.stream.read()
 
-        e = urllib2.HTTPError("url", 500, "Server Error", {}, res)
-        urllib2.urlopen = MagicMock(side_effect=e)
-        stream = Mandrill({
-            "key":"invalid"
-        }, OPTIONS )
-
-        try:
-            stream.read()
-        except MandrillError, e:
-            self.assertEqual(str(e), "invalid API key")
+        self.assertEqual(result_a, [])
+        self.assertEqual(result_b, [])
+        self.assertEqual(result_c, None)
 
     def test_required_metric(self):
-        conf.metrics = [{
-            "name":"metric",
-            "path":"metric.json",
-            "required":"name",
-            "listpath":"metric/list.json"
+        metrics = [{ 
+            "name":"senders",
+            "path":"time_series",
+            "required":"address",
+            "category": "senders"
         }]
+        res = [
+            {"address": "a@a.a"},
+            {"address": "b@b.b"}
+        ]
+        self.stream.metrics = metrics
+        self.stream.mandrill_client.senders.list = MagicMock(return_value=res)
+        self.stream.mandrill_client.senders.time_series = MagicMock()
+        self.stream.read()
 
-        res1 = BytesIO(json.dumps([
-            {"name":"id1"},
-            {"name":"id2"}
-        ]))
-        res2 = BytesIO("[{}]")
-        res3 = BytesIO("[{}]")
+        # last call was the last address
+        self.stream.mandrill_client.senders.time_series.assert_called_with(address="b@b.b")
+        # called twice (one time for each address)
+        self.assertEqual(self.stream.mandrill_client.senders.time_series.call_count, 2)
+    
+    def test_batched_required_metric(self):
+        SIZE_TO_CHECK = EXTRACTED_FIELDS_BATCH_SIZE * 3 + 5
+        metrics = [{ 
+            "name":"senders",
+            "path":"time_series",
+            "required":"address",
+            "category": "senders"
+        }]
+        res = [{"address": "a@a.a"} for i in xrange(SIZE_TO_CHECK)]
+        self.stream.metrics = metrics
+        self.stream.mandrill_client.senders.list = MagicMock(return_value=res)
+        self.stream.mandrill_client.senders.time_series = MagicMock()
+        for i in range(int(math.ceil(SIZE_TO_CHECK / float(EXTRACTED_FIELDS_BATCH_SIZE)))):
+            self.stream.read()
 
-        mock = MagicMock();
-        mock.side_effect = [res1, res2, res3]
-        urllib2.urlopen = mock
+        # called SIZE_TO_CHECK times (one time for each address)
+        self.assertEqual(self.stream.mandrill_client.senders.time_series.call_count, SIZE_TO_CHECK)
 
-        stream = Mandrill({
-            "key":"MandrillKey"
-        }, OPTIONS)
-        result = stream.read()[0]
-
-        args = urllib2.urlopen.call_args_list
-        self.assertEqual(mock.call_count, 2)
-        req1, body1 = args[0][0]
-        req2, body2 = args[1][0]
-        body1 = json.loads(body1)
-        body2 = json.loads(body2)
-        url1 = conf.BASE_URL + "metric/list.json"
-        url2 = conf.BASE_URL + "metric.json"
-        self.assertEqual(req1.get_full_url(), url1)
-        self.assertEqual(req2.get_full_url(), url2)
-        self.assertEqual(body2.get("name"), "id1")
-        self.assertEqual(result.get("name"), "id1") # add the name to the result
+    def test_export_metric(self):
+        metrics = [{ 
+            "name":"exports",
+            "path":"activity",
+            "category": "exports"
+        }]
+        self.stream.metrics = metrics
+        self.stream.mandrill_client.exports.activity = MagicMock()
+        res = {
+            # this file has 2 rows of data
+            "result_url": "https://s3.amazonaws.com/panoply-build-assets/mandrilltest/activity.csv.zip"
+        }
+        self.stream.mandrill_client.exports.info = MagicMock(return_value=res)
+        result = self.stream.read()
         
-        # iterate over the required list
-        result = stream.read()[0]
-        self.assertEqual(mock.call_count, 3)
-        req3, body3 = args[2][0]
-        body3 = json.loads(body3)
-        self.assertEqual(body3.get("name"), "id2")
-        self.assertEqual(result.get("name"), "id2") # add the name to the result
-
-        # make sure we done
-        isNone = stream.read()
-        self.assertEqual(isNone, None)
+        self.assertEqual(len(result), 2)
 
 if __name__ == "__main__":
     unittest.main()
