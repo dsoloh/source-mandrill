@@ -9,6 +9,7 @@ setup(
     url="http://panoply.io",
     package_dir={"panoply": ""},
     install_requires=[
+        "requests==2.3.0",
         "panoply-python-sdk",
         "mock==1.0.1",
         "mandrill==1.0.57"
