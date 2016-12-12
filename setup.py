@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(
-    name="mandrill",
+    name="panoply_mandrill",
     version="1.0.1",
     description="Panoply Data Source for Mandrill API",
     author="Kfir Gez, Oshri Bienhaker",
@@ -13,5 +13,5 @@ setup(
         "mock==1.0.1",
         "mandrill==1.0.57"
     ],
-    packages=["panoply.mandrill"]
+    packages=["panoply.panoply_mandrill"]
 )

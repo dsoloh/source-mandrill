@@ -1,4 +1,4 @@
-from mandrill import PanoplyMandrill, EXTRACTED_FIELDS_BATCH_SIZE
+from panoply_mandrill import PanoplyMandrill, EXTRACTED_FIELDS_BATCH_SIZE
 from conf import metrics
 
 Stream = PanoplyMandrill
