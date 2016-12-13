@@ -242,7 +242,7 @@ class PanoplyMandrill(panoply.DataSource):
             self.stopOngoingJob()
             return []
         # reduce the batch for the next callable
-        data['results'] = data.get('results', [])[EXTRACTED_FIELDS_BATCH_SIZE:]
+        data['results'] = data.get('results', [])[EXPORT_BATCH_SIZE:]
         data['batch_number'] = batch_number + 1
         self.setOngoingJob(data)
         self.log('sending export batch #%d' % batch_number)
