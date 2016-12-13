@@ -216,7 +216,7 @@ class PanoplyMandrill(panoply.DataSource):
             for row in csv_reader:
                 results.append(row)
                 log_counter += 1
-                if log_counter % 200 == 0:
+                if log_counter % 2 == 0:
                     self.log('processed %d lines so far' % log_counter)
         finally:
             tmp_file.close()
