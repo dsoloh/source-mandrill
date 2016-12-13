@@ -23,7 +23,7 @@ SLEEP_TIME_SECONDS = 20
 COPY_CHUNK_SIZE = 16 * 1024
 CSV_FILE_NAME = "activity.csv"
 EXTRACTED_FIELDS_BATCH_SIZE = 50
-EXPORT_BATCH_SIZE = 1000
+EXPORT_BATCH_SIZE = 3000
 
 def mergeDicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
@@ -225,7 +225,7 @@ class PanoplyMandrill(panoply.DataSource):
             'results': results,
             'function': self.staggerExport
         }
-        # will periodically process the extracted fields
+        # will periodically return part of the result set
         self.setOngoingJob(data)
         # return the 1st batch
         return self.staggerExport(data)
@@ -247,6 +247,3 @@ class PanoplyMandrill(panoply.DataSource):
         self.setOngoingJob(data)
         self.log('sending export batch #%d' % batch_number)
         return results
-        
-
-
