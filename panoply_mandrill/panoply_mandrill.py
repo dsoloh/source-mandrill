@@ -201,15 +201,22 @@ class PanoplyMandrill(panoply.DataSource):
             return []
         
         # now we have the url to download from
+        self.log('starting to download from:', url)
         req = urlopen(url)
         results = []
+        log_counter = 0
         tmp_file = tempfile.NamedTemporaryFile(delete=True)
         try:
             shutil.copyfileobj(req, tmp_file, COPY_CHUNK_SIZE)
+            self.log('download has finished')
             zf = zipfile.ZipFile(tmp_file)
             csv_reader = csv.DictReader(zf.open(CSV_FILE_NAME), delimiter=',')
+            self.log('zipfile has been retrieved, unzipping as a stream')
             for row in csv_reader:
                 results.append(row)
+                log_counter += 1
+                if log_counter % 200 == 0:
+                    self.log('proccessed %d lines so far' % log_counter)
         finally:
             tmp_file.close()
         return results
