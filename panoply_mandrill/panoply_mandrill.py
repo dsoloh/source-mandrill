@@ -23,6 +23,7 @@ SLEEP_TIME_SECONDS = 20
 COPY_CHUNK_SIZE = 16 * 1024
 CSV_FILE_NAME = "activity.csv"
 EXTRACTED_FIELDS_BATCH_SIZE = 50
+EXPORT_BATCH_SIZE = 1000
 
 def mergeDicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
@@ -206,7 +207,6 @@ class PanoplyMandrill(panoply.DataSource):
         self.log('starting to download from:', url)
         req = urlopen(url)
         results = []
-        log_counter = 0
         tmp_file = tempfile.NamedTemporaryFile(delete=True)
         try:
             shutil.copyfileobj(req, tmp_file, COPY_CHUNK_SIZE)
@@ -216,9 +216,37 @@ class PanoplyMandrill(panoply.DataSource):
             self.log('zipfile has been retrieved, unzipping as a stream')
             for row in csv_reader:
                 results.append(row)
-                log_counter += 1
-                if log_counter % 100 == 0:
-                    self.log('processed %d lines so far' % log_counter)
         finally:
             tmp_file.close()
+        
+        # stagger the results so the writer can handle them
+        data = {
+            'metric': metric,
+            'results': results,
+            'function': self.staggerExport
+        }
+        # will periodically process the extracted fields
+        self.setOngoingJob(data)
+        # return the 1st batch
+        return self.staggerExport(data)
+
+    def staggerExport(self, data):
+        '''
+        return the export in batches so the writer
+        will digest them better
+        '''
+        results = data.get('results', [])[:EXPORT_BATCH_SIZE]
+        batch_number = data.get('batch_number', 0)
+        # if finished the extracted_fields we can stop this ongoing job
+        if (len(results) == 0):
+            self.stopOngoingJob()
+            return []
+        # reduce the batch for the next callable
+        data['results'] = data.get('results', [])[EXTRACTED_FIELDS_BATCH_SIZE:]
+        data['batch_number'] = batch_number + 1
+        self.setOngoingJob(data)
+        self.log('sending export batch #%d' % batch_number)
         return results
+        
+
+
