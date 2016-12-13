@@ -217,7 +217,7 @@ class PanoplyMandrill(panoply.DataSource):
                 results.append(row)
                 log_counter += 1
                 if log_counter % 200 == 0:
-                    self.log('proccessed %d lines so far' % log_counter)
+                    self.log('processed %d lines so far' % log_counter)
         finally:
             tmp_file.close()
         return results
