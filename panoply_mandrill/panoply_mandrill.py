@@ -192,6 +192,7 @@ class PanoplyMandrill(panoply.DataSource):
             if (status == 'error' or status == 'expired'):
                 self.log('WARN: export job status was:', status);
                 return False
+            self.log('waiting for export job to finish')
             time.sleep(SLEEP_TIME_SECONDS)
 
         while url is None:
