@@ -6,6 +6,7 @@ import tempfile
 import shutil
 import zipfile
 import csv
+import os
 from datetime import datetime
 from functools import partial, wraps
 from itertools import chain
@@ -209,14 +210,14 @@ class PanoplyMandrill(panoply.DataSource):
         tmp_file = tempfile.NamedTemporaryFile(delete=True)
         try:
             shutil.copyfileobj(req, tmp_file, COPY_CHUNK_SIZE)
-            self.log('download has finished')
+            self.log('download has finished size:', os.path.getsize(tmp_file.name))
             zf = zipfile.ZipFile(tmp_file)
             csv_reader = csv.DictReader(zf.open(CSV_FILE_NAME), delimiter=',')
             self.log('zipfile has been retrieved, unzipping as a stream')
             for row in csv_reader:
                 results.append(row)
                 log_counter += 1
-                if log_counter % 2 == 0:
+                if log_counter % 100 == 0:
                     self.log('processed %d lines so far' % log_counter)
         finally:
             tmp_file.close()
