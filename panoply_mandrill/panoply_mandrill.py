@@ -6,6 +6,7 @@ import tempfile
 import shutil
 import zipfile
 import csv
+import os
 from datetime import datetime
 from functools import partial, wraps
 from itertools import chain
@@ -22,6 +23,7 @@ SLEEP_TIME_SECONDS = 20
 COPY_CHUNK_SIZE = 16 * 1024
 CSV_FILE_NAME = "activity.csv"
 EXTRACTED_FIELDS_BATCH_SIZE = 50
+EXPORT_BATCH_SIZE = 1000
 
 def mergeDicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
@@ -192,6 +194,7 @@ class PanoplyMandrill(panoply.DataSource):
             if (status == 'error' or status == 'expired'):
                 self.log('WARN: export job status was:', status);
                 return False
+            self.log('waiting for export job to finish')
             time.sleep(SLEEP_TIME_SECONDS)
 
         while url is None:
@@ -201,15 +204,46 @@ class PanoplyMandrill(panoply.DataSource):
             return []
         
         # now we have the url to download from
+        self.log('starting to download from:', url)
         req = urlopen(url)
         results = []
         tmp_file = tempfile.NamedTemporaryFile(delete=True)
         try:
             shutil.copyfileobj(req, tmp_file, COPY_CHUNK_SIZE)
+            self.log('download has finished size:', os.path.getsize(tmp_file.name))
             zf = zipfile.ZipFile(tmp_file)
             csv_reader = csv.DictReader(zf.open(CSV_FILE_NAME), delimiter=',')
+            self.log('zipfile has been retrieved, unzipping as a stream')
             for row in csv_reader:
                 results.append(row)
         finally:
             tmp_file.close()
+        
+        # stagger the results so the writer can handle them
+        data = {
+            'metric': metric,
+            'results': results,
+            'function': self.staggerExport
+        }
+        # will periodically return part of the result set
+        self.setOngoingJob(data)
+        # return the 1st batch
+        return self.staggerExport(data)
+
+    def staggerExport(self, data):
+        '''
+        return the export in batches so the writer
+        will digest them better
+        '''
+        results = data.get('results', [])[:EXPORT_BATCH_SIZE]
+        batch_number = data.get('batch_number', 0)
+        # if finished the extracted_fields we can stop this ongoing job
+        if (len(results) == 0):
+            self.stopOngoingJob()
+            return []
+        # reduce the batch for the next callable
+        data['results'] = data.get('results', [])[EXPORT_BATCH_SIZE:]
+        data['batch_number'] = batch_number + 1
+        self.setOngoingJob(data)
+        self.log('sending export batch #%d' % batch_number)
         return results
