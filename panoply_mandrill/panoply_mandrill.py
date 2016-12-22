@@ -10,7 +10,7 @@ import os
 from datetime import datetime
 from functools import partial, wraps
 from itertools import chain
-from mandrill import Mandrill
+from mandrill import Mandrill, InvalidKeyError
 from urllib2 import urlopen
 
 MINUTE = 60
@@ -62,7 +62,11 @@ class PanoplyMandrill(panoply.DataSource):
         self.ongoingJob = None
         self.mandrill_client = Mandrill(self.key)
         # will raise InvalidKeyError if the api key is wrong
-        self.mandrill_client.users.ping()
+        try:
+            self.mandrill_client.users.ping()
+        except InvalidKeyError as e:
+            e.retryable = False
+            raise e
 
     def getLastTimeSucceed(self, source):
         '''if lastTimeSucceed exists, use it as fromTime'''
