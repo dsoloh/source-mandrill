@@ -10,6 +10,7 @@ import os
 from datetime import datetime
 from functools import partial, wraps
 from itertools import chain
+from collections import defaultdict
 from mandrill import Mandrill, InvalidKeyError
 from urllib2 import urlopen
 
@@ -24,12 +25,22 @@ COPY_CHUNK_SIZE = 16 * 1024
 CSV_FILE_NAME = "activity.csv"
 EXTRACTED_FIELDS_BATCH_SIZE = 50
 EXPORT_BATCH_SIZE = 1000
+# if a csv row has all of these fields equal, we will calcualte a special idrank for it
+EXPORT_COUNTER_KEY_FIELDS = ['date', 'email address', 'sender']
 
 def mergeDicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
     z = x.copy()
     z.update(y)
     return z
+
+def generateExportKey(row):
+    '''generates a key for a given csv export row'''
+    key = ''
+    for field in EXPORT_COUNTER_KEY_FIELDS:
+        if field in row:
+            key += row[field]
+    return key
 
 def reportProgress(fn):
     '''decorator for auto progress report'''
@@ -213,6 +224,8 @@ class PanoplyMandrill(panoply.DataSource):
         self.log('starting to download from:', url)
         req = urlopen(url)
         results = []
+        # count how many times we have seen the given row
+        already_seen_map = defaultdict(int)
         tmp_file = tempfile.NamedTemporaryFile(delete=True)
         try:
             shutil.copyfileobj(req, tmp_file, COPY_CHUNK_SIZE)
@@ -220,8 +233,19 @@ class PanoplyMandrill(panoply.DataSource):
             zf = zipfile.ZipFile(tmp_file)
             csv_reader = csv.DictReader(zf.open(CSV_FILE_NAME), delimiter=',')
             self.log('zipfile has been retrieved, unzipping as a stream')
+            # rankid the rows
+            self.log('ranking the csv export rows')
             for row in csv_reader:
+                # save for the next iteration
+                row['__exportKey'] = generateExportKey(row)
+                already_seen_map[row['__exportKey']] += 1
                 results.append(row)
+            # update the rows with the right counter
+            self.log('applying the id results to the result set')
+            for row in results:
+                row['rankid'] = already_seen_map[row['__exportKey']]
+                # we do not need to store to the table the inner export key
+                del row['__exportKey']
         finally:
             tmp_file.close()
         
