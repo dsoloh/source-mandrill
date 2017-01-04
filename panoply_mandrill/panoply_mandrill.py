@@ -54,7 +54,9 @@ class PanoplyMandrill(panoply.DataSource):
         source["idpattern"] = source.get("idpattern") or IDPATTERN
 
         fromsec = int(time.time() - (DAY_RANGE * DAY))
-        self.fromTime = self.getLastTimeSucceed(source) or formatTime(time.gmtime(fromsec))
+        # disabled since we always need 30 days back with the AllowDuplicates method
+        #self.fromTime = self.getLastTimeSucceed(source) or formatTime(time.gmtime(fromsec))
+        self.fromTime = formatTime(time.gmtime(fromsec))
         self.toTime = formatTime(time.gmtime())
         self.metrics = copy.deepcopy(conf.metrics)
         self.total = len(self.metrics)
