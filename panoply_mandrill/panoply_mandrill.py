@@ -40,9 +40,6 @@ def generateExportKey(row):
     for field in EXPORT_COUNTER_KEY_FIELDS:
         if field in row:
             key += row[field]
-        else
-            self.log('PROBLEM PROBLEM:' + row)
-            raise Exception()
     return key
 
 def reportProgress(fn):
@@ -240,6 +237,9 @@ class PanoplyMandrill(panoply.DataSource):
             self.log('ranking the csv export rows')
             for row in csv_reader:
                 key = generateExportKey(row)
+                self.log('LOOK AT THIS KEY:', key)
+                self.log('THIS IS THE ROW:', row)
+                raise Exception('spam', 'eggs')
                 row['lookatthis'] = key
                 row['rankid'] = already_seen_map[key]
                 already_seen_map[key] += 1
