@@ -236,10 +236,9 @@ class PanoplyMandrill(panoply.DataSource):
             # rankid the rows
             self.log('ranking the csv export rows')
             for row in csv_reader:
-                # save for the next iteration
                 key = generateExportKey(row)
-                row['rankid'] = already_seen_map[row[key]]
-                already_seen_map[row[key]] += 1
+                row['rankid'] = already_seen_map[key]
+                already_seen_map[key] += 1
                 results.append(row)
         finally:
             tmp_file.close()
