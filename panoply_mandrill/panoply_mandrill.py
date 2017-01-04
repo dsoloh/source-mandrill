@@ -26,7 +26,7 @@ CSV_FILE_NAME = "activity.csv"
 EXTRACTED_FIELDS_BATCH_SIZE = 50
 EXPORT_BATCH_SIZE = 1000
 # if a csv row has all of these fields equal, we will calcualte a special idrank for it
-EXPORT_COUNTER_KEY_FIELDS = ['date', 'email address', 'sender']
+EXPORT_COUNTER_KEY_FIELDS = ['Date', 'Email Address', 'Sender']
 
 def mergeDicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
@@ -237,10 +237,7 @@ class PanoplyMandrill(panoply.DataSource):
             self.log('ranking the csv export rows')
             for row in csv_reader:
                 key = generateExportKey(row)
-                self.log('LOOK AT THIS KEY:', key)
-                self.log('THIS IS THE ROW:', row)
-                raise Exception('spam', 'eggs')
-                row['lookatthis'] = key
+                row['lookatme'] = key
                 row['rankid'] = already_seen_map[key]
                 already_seen_map[key] += 1
                 results.append(row)
