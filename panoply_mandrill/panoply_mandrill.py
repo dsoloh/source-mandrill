@@ -40,6 +40,8 @@ def generateExportKey(row):
     for field in EXPORT_COUNTER_KEY_FIELDS:
         if field in row:
             key += row[field]
+        else
+            raise 'PROBLEM PROBLEM:' + row
     return key
 
 def reportProgress(fn):
