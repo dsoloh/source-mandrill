@@ -41,7 +41,8 @@ def generateExportKey(row):
         if field in row:
             key += row[field]
         else
-            raise 'PROBLEM PROBLEM:' + row
+            self.log('PROBLEM PROBLEM:' + row)
+            raise Exception()
     return key
 
 def reportProgress(fn):
