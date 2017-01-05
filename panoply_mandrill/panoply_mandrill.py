@@ -225,7 +225,7 @@ class PanoplyMandrill(panoply.DataSource):
         req = urlopen(url)
         results = []
         # count how many times we have seen the given row
-        already_seen_map = defaultdict(int)
+        already_seen_map = defaultdict(lambda: 1)
         tmp_file = tempfile.NamedTemporaryFile(delete=True)
         try:
             shutil.copyfileobj(req, tmp_file, COPY_CHUNK_SIZE)
