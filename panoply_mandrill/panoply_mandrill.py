@@ -19,7 +19,7 @@ HOUR = 60 * MINUTE
 DAY = 24 * HOUR
 DAY_RANGE = conf.DAY_RANGE
 DESTINATION = "mandrill_{type}"
-IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}-{date}-{email address}-{sender}-{subject}-{_rankid}"
+IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}-{date}-{email address}-{sender}-{subject}-{rankid}"
 SLEEP_TIME_SECONDS = 20
 COPY_CHUNK_SIZE = 16 * 1024
 CSV_FILE_NAME = "activity.csv"
@@ -238,7 +238,7 @@ class PanoplyMandrill(panoply.DataSource):
             for row in csv_reader:
                 key = generateExportKey(row)
                 row['lookatme'] = key
-                row['_rankid'] = already_seen_map[key]
+                row['rankid'] = already_seen_map[key]
                 already_seen_map[key] += 1
                 results.append(row)
         finally:
