@@ -19,13 +19,13 @@ HOUR = 60 * MINUTE
 DAY = 24 * HOUR
 DAY_RANGE = conf.DAY_RANGE
 DESTINATION = "mandrill_{type}"
-IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}-{date}-{email address}-{sender}-{subject}-{__rankid}"
+IDPATTERN = "{time}-{key}-{type}-{name}-{address}-{url}-{date}-{email address}"
 SLEEP_TIME_SECONDS = 20
 COPY_CHUNK_SIZE = 16 * 1024
 CSV_FILE_NAME = "activity.csv"
 EXTRACTED_FIELDS_BATCH_SIZE = 50
 EXPORT_BATCH_SIZE = 1000
-# if a csv row has all of these fields equal, we will calcualte a special idrank for it
+# if a csv row has all(or some) of these fields equal, we will increase its idrank
 EXPORT_COUNTER_KEY_FIELDS = ['Date', 'Email Address', 'Sender', 'Subject']
 
 def mergeDicts(x, y):
@@ -40,6 +40,8 @@ def generateExportKey(row):
     for field in EXPORT_COUNTER_KEY_FIELDS:
         if field in row:
             key += row[field]
+        key += '-'
+    key = key[:-1] # remove the last '-'
     return key
 
 def reportProgress(fn):
@@ -237,7 +239,8 @@ class PanoplyMandrill(panoply.DataSource):
             self.log('ranking the csv export rows')
             for row in csv_reader:
                 key = generateExportKey(row)
-                row['__rankid'] = already_seen_map[key]
+                # final id form is the generated key + '-' + idrank
+                row['id'] = key + '-' + already_seen_map[key]
                 already_seen_map[key] += 1
                 results.append(row)
         finally:
