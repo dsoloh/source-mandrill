@@ -240,7 +240,7 @@ class PanoplyMandrill(panoply.DataSource):
             for row in csv_reader:
                 key = generateExportKey(row)
                 # final id form is the generated key + '-' + idrank
-                row['id'] = key + '-' + already_seen_map[key]
+                row['id'] = key + '-' + str(already_seen_map[key])
                 already_seen_map[key] += 1
                 results.append(row)
         finally:
