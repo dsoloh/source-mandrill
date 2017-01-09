@@ -88,10 +88,10 @@ class PanoplyMandrill(panoply.DataSource):
     def generateExportKey(self, row):
         '''generates a key for a given csv export row'''
         # self.key is the API key, it is not the key itself
-        key = unicode(self.key, 'utf-8')
+        key = self.key
         for field in EXPORT_COUNTER_KEY_FIELDS:
             if field in row:
-                key += unicode(row[field], 'utf-8')
+                key += row[field].encode('utf-8')
             key += '-'
         key = key[:-1] # remove the last '-'
         return key
