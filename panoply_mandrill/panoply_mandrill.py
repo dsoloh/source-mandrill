@@ -34,16 +34,6 @@ def mergeDicts(x, y):
     z.update(y)
     return z
 
-def generateExportKey(row):
-    '''generates a key for a given csv export row'''
-    key = ''
-    for field in EXPORT_COUNTER_KEY_FIELDS:
-        if field in row:
-            key += row[field]
-        key += '-'
-    key = key[:-1] # remove the last '-'
-    return key
-
 def reportProgress(fn):
     '''decorator for auto progress report'''
     @wraps(fn)
@@ -94,6 +84,17 @@ class PanoplyMandrill(panoply.DataSource):
             return formatTime(time_struct)
         except:
             return None
+
+    def generateExportKey(self, row):
+        '''generates a key for a given csv export row'''
+        # self.key is the API key, not related to the id we are making here
+        key = self.key
+        for field in EXPORT_COUNTER_KEY_FIELDS:
+            if field in row:
+                key += row[field]
+            key += '-'
+        key = key[:-1] # remove the last '-'
+        return key
 
     @reportProgress
     def read(self, n = None):
@@ -238,7 +239,7 @@ class PanoplyMandrill(panoply.DataSource):
             # rankid the rows
             self.log('ranking the csv export rows')
             for row in csv_reader:
-                key = generateExportKey(row)
+                key = self.generateExportKey(row)
                 # final id form is the generated key + '-' + idrank
                 row['id'] = key + '-' + str(already_seen_map[key])
                 already_seen_map[key] += 1
