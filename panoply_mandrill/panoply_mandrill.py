@@ -87,7 +87,7 @@ class PanoplyMandrill(panoply.DataSource):
 
     def generateExportKey(self, row):
         '''generates a key for a given csv export row'''
-        # self.key is the API key, not related to the id we are making here
+        # self.key is the API key, it is not the key itself
         key = self.key
         for field in EXPORT_COUNTER_KEY_FIELDS:
             if field in row:
