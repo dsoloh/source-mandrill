@@ -10,6 +10,7 @@ import os
 from datetime import datetime
 from functools import partial, wraps
 from itertools import chain
+from collections import defaultdict
 from mandrill import Mandrill, InvalidKeyError
 from urllib2 import urlopen
 
@@ -24,6 +25,8 @@ COPY_CHUNK_SIZE = 16 * 1024
 CSV_FILE_NAME = "activity.csv"
 EXTRACTED_FIELDS_BATCH_SIZE = 50
 EXPORT_BATCH_SIZE = 1000
+# if a csv row has all(or some) of these fields equal, we will increase its idrank
+EXPORT_COUNTER_KEY_FIELDS = ['Date', 'Email Address', 'Sender', 'Subject']
 
 def mergeDicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
@@ -54,7 +57,9 @@ class PanoplyMandrill(panoply.DataSource):
         source["idpattern"] = source.get("idpattern") or IDPATTERN
 
         fromsec = int(time.time() - (DAY_RANGE * DAY))
-        self.fromTime = self.getLastTimeSucceed(source) or formatTime(time.gmtime(fromsec))
+        # disabled since we always need 30 days back with the AllowDuplicates method
+        #self.fromTime = self.getLastTimeSucceed(source) or formatTime(time.gmtime(fromsec))
+        self.fromTime = formatTime(time.gmtime(fromsec))
         self.toTime = formatTime(time.gmtime())
         self.metrics = copy.deepcopy(conf.metrics)
         self.total = len(self.metrics)
@@ -79,6 +84,18 @@ class PanoplyMandrill(panoply.DataSource):
             return formatTime(time_struct)
         except:
             return None
+
+    def generateExportKey(self, row):
+        '''generates a key for a given csv export row'''
+        # self.key is the API key, it is not the key itself
+        key = ''
+        key += self.key + '-'
+        for field in EXPORT_COUNTER_KEY_FIELDS:
+            if field in row:
+                key += row[field].decode('utf-8')
+            key += '-'
+        key = key[:-1] # remove the last '-'
+        return key
 
     @reportProgress
     def read(self, n = None):
@@ -211,6 +228,8 @@ class PanoplyMandrill(panoply.DataSource):
         self.log('starting to download from:', url)
         req = urlopen(url)
         results = []
+        # count how many times we have seen the given row
+        already_seen_map = defaultdict(lambda: 1)
         tmp_file = tempfile.NamedTemporaryFile(delete=True)
         try:
             shutil.copyfileobj(req, tmp_file, COPY_CHUNK_SIZE)
@@ -218,7 +237,13 @@ class PanoplyMandrill(panoply.DataSource):
             zf = zipfile.ZipFile(tmp_file)
             csv_reader = csv.DictReader(zf.open(CSV_FILE_NAME), delimiter=',')
             self.log('zipfile has been retrieved, unzipping as a stream')
+            # rankid the rows
+            self.log('ranking the csv export rows')
             for row in csv_reader:
+                key = self.generateExportKey(row)
+                # final id form is the generated key + '-' + idrank
+                row['id'] = key + '-' + str(already_seen_map[key])
+                already_seen_map[key] += 1
                 results.append(row)
         finally:
             tmp_file.close()
