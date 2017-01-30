@@ -232,6 +232,7 @@ class PanoplyMandrill(panoply.DataSource):
         already_seen_map = defaultdict(lambda: 1)
         tmp_file = tempfile.NamedTemporaryFile(delete=True)
         try:
+            raise Exception('ouch')
             shutil.copyfileobj(req, tmp_file, COPY_CHUNK_SIZE)
             self.log('download has finished size:', os.path.getsize(tmp_file.name))
             zf = zipfile.ZipFile(tmp_file)
@@ -248,6 +249,7 @@ class PanoplyMandrill(panoply.DataSource):
         except Exception, e:
             raise e
         finally:
+            self.log('TESTTHISTESTTESTTHISTEST')
             tmp_file.close()
         
         # stagger the results so the writer can handle them
