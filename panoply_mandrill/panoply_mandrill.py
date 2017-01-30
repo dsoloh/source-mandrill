@@ -99,6 +99,7 @@ class PanoplyMandrill(panoply.DataSource):
 
     @reportProgress
     def read(self, n = None):
+        self.log('Inside Mandrill')
         if len(self.metrics) == 0:
             self.log('Everything has been sent, finished processing')
             return None # No more data to consume
@@ -122,6 +123,7 @@ class PanoplyMandrill(panoply.DataSource):
         # only pop when we are not in an ongoingJob
         if not self.ongoingJob:
             self.metrics.pop(0)
+        self.log('Outside Mandrill')
         return result
     
     def getFn(self, metric, path=None):
