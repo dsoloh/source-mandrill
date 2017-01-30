@@ -92,7 +92,7 @@ class PanoplyMandrill(panoply.DataSource):
         key += self.key + '-'
         for field in EXPORT_COUNTER_KEY_FIELDS:
             if field in row:
-                key += row[field]
+                key += row[field].decode('utf-8')
             key += '-'
         key = key[:-1] # remove the last '-'
         return key
