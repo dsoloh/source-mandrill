@@ -245,6 +245,8 @@ class PanoplyMandrill(panoply.DataSource):
                 row['id'] = key + '-' + str(already_seen_map[key])
                 already_seen_map[key] += 1
                 results.append(row)
+        except Exception, e:
+            raise e
         finally:
             tmp_file.close()
         
