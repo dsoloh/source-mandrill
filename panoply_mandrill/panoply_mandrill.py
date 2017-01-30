@@ -100,6 +100,7 @@ class PanoplyMandrill(panoply.DataSource):
     @reportProgress
     def read(self, n = None):
         if len(self.metrics) == 0:
+            self.log('Everything has been sent, finished processing')
             return None # No more data to consume
         metric = self.metrics[0]
 
