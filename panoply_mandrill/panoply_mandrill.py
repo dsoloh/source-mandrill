@@ -102,6 +102,7 @@ class PanoplyMandrill(panoply.DataSource):
         self.log('Inside Mandrill')
         if len(self.metrics) == 0:
             self.log('Everything has been sent, finished processing')
+            self.log('Outside Mandrill')
             return None # No more data to consume
         metric = self.metrics[0]
 
