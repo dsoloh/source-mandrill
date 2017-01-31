@@ -244,6 +244,8 @@ class PanoplyMandrill(panoply.DataSource):
             output = StringIO.StringIO()
             shutil.copyfileobj(zf.open(CSV_FILE_NAME), output, COPY_CHUNK_SIZE)
             zf.close()
+            # rewind the file-like memory object back to start
+            output.seek(0)
             csv_reader = csv.DictReader(output, delimiter=',')
             self.log('zipfile has been retrieved')
         except Exception, e:
