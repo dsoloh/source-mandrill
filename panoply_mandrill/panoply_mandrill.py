@@ -7,6 +7,7 @@ import shutil
 import zipfile
 import csv
 import os
+import base64
 from datetime import datetime
 from functools import partial, wraps
 from itertools import chain
@@ -91,9 +92,11 @@ class PanoplyMandrill(panoply.DataSource):
         key = ''
         key += self.key + '-'
         for field in EXPORT_COUNTER_KEY_FIELDS:
-            self.log('trying field:', field)
             if field in row:
-                key += row[field]
+                if field == 'Subject':
+                    key += base64.b64encode(row[field])
+                else:
+                    key += row[field]
             key += '-'
         key = key[:-1] # remove the last '-'
         return key
