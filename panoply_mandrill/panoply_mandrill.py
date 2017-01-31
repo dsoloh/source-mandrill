@@ -233,7 +233,7 @@ class PanoplyMandrill(panoply.DataSource):
         req = urlopen(url)
         results = []
         # count how many times we have seen the given row
-        already_seen_map = defaultdict(lambda: 1)
+        #already_seen_map = defaultdict(lambda: 1)
         tmp_file = tempfile.NamedTemporaryFile(delete=True)
         try:
             shutil.copyfileobj(req, tmp_file, COPY_CHUNK_SIZE)
@@ -242,12 +242,12 @@ class PanoplyMandrill(panoply.DataSource):
             csv_reader = csv.DictReader(zf.open(CSV_FILE_NAME), delimiter=',')
             self.log('zipfile has been retrieved, unzipping as a stream')
             # rankid the rows
-            self.log('ranking the csv export rows')
+            #self.log('ranking the csv export rows')
             for row in csv_reader:
                 key = self.generateExportKey(row)
                 # final id form is the generated key + '-' + idrank
-                row['id'] = key + '-' + str(already_seen_map[key])
-                already_seen_map[key] += 1
+                row['id'] = key + '-' + 1
+                #already_seen_map[key] += 1
                 results.append(row)
         except Exception, e:
             raise e
