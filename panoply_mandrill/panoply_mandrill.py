@@ -240,9 +240,9 @@ class PanoplyMandrill(panoply.DataSource):
             shutil.copyfileobj(req, tmp_file, COPY_CHUNK_SIZE)
             self.log('download has finished size:', os.path.getsize(tmp_file.name))
             zf = zipfile.ZipFile(tmp_file)
-            mapped_file = mmap.mmap(zf.open(CSV_FILE_NAME).fileno(), 0, access=mmap.ACCESS_READ)
-            zf.close()
-            csv_reader = csv.DictReader(mapped_file, delimiter=',')
+            #mapped_file = mmap.mmap(zf.open(CSV_FILE_NAME).fileno(), 0, access=mmap.ACCESS_READ)
+            #zf.close()
+            csv_reader = csv.DictReader(zf.open(CSV_FILE_NAME), delimiter=',')
             self.log('zipfile has been retrieved')
         except Exception, e:
             raise e
