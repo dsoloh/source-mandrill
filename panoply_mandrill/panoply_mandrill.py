@@ -246,7 +246,7 @@ class PanoplyMandrill(panoply.DataSource):
             for row in csv_reader:
                 key = self.generateExportKey(row)
                 # final id form is the generated key + '-' + idrank
-                row['id'] = key + '-' + 1
+                row['id'] = key + '-' + str(1)
                 #already_seen_map[key] += 1
                 results.append(row)
         except Exception, e:
