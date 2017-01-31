@@ -7,6 +7,7 @@ import shutil
 import zipfile
 import csv
 import os
+import mmap
 from datetime import datetime
 from functools import partial, wraps
 from itertools import chain
@@ -239,25 +240,21 @@ class PanoplyMandrill(panoply.DataSource):
             shutil.copyfileobj(req, tmp_file, COPY_CHUNK_SIZE)
             self.log('download has finished size:', os.path.getsize(tmp_file.name))
             zf = zipfile.ZipFile(tmp_file)
-            csv_reader = csv.DictReader(zf.open(CSV_FILE_NAME), delimiter=',')
-            self.log('zipfile has been retrieved, unzipping as a stream')
-            # rankid the rows
-            self.log('ranking the csv export rows')
-            for row in csv_reader:
-                key = self.generateExportKey(row)
-                # final id form is the generated key + '-' + idrank
-                row['id'] = key + '-' + str(already_seen_map[key])
-                already_seen_map[key] += 1
-                results.append(row)
+            mapped_file = mmap.mmap(zf.open(CSV_FILE_NAME).fileno(), 0, access=mmap.ACCESS_READ)
+            zf.close()
+            csv_reader = csv.DictReader(mapped_file, delimiter=',')
+            self.log('zipfile has been retrieved')
         except Exception, e:
             raise e
         finally:
             tmp_file.close()
         
         # stagger the results so the writer can handle them
+        # and for limiting our memory usage
         data = {
             'metric': metric,
-            'results': results,
+            'csv_reader': csv_reader,
+            'already_seen_map': already_seen_map,
             'function': self.staggerExport
         }
         # will periodically return part of the result set
@@ -270,14 +267,24 @@ class PanoplyMandrill(panoply.DataSource):
         return the export in batches so the writer
         will digest them better
         '''
-        results = data.get('results', [])[:EXPORT_BATCH_SIZE]
         batch_number = data.get('batch_number', 0)
-        # if finished the extracted_fields we can stop this ongoing job
-        if (len(results) == 0):
+        csv_reader = data.get('csv_reader')
+        already_seen_map = data.get('already_seen_map')
+        results = []
+        try:
+            for i in xrange(EXPORT_BATCH_SIZE):
+                row = csv_reader.next()
+                key = self.generateExportKey(row)
+                # final id form is the generated key + '-' + idrank
+                row['id'] = key + '-' + str(already_seen_map[key])
+                already_seen_map[key] += 1
+                results.append(row)
+        # if finished we can stop this ongoing job
+        except StopIteration:
             self.stopOngoingJob()
-            return []
+            self.log('sending export batch FINAL')
+            return results
         # reduce the batch for the next callable
-        data['results'] = data.get('results', [])[EXPORT_BATCH_SIZE:]
         data['batch_number'] = batch_number + 1
         self.setOngoingJob(data)
         self.log('sending export batch #%d' % batch_number)
