@@ -24,7 +24,7 @@ SLEEP_TIME_SECONDS = 20
 COPY_CHUNK_SIZE = 16 * 1024
 CSV_FILE_NAME = "activity.csv"
 EXTRACTED_FIELDS_BATCH_SIZE = 50
-EXPORT_BATCH_SIZE = 1000
+EXPORT_BATCH_SIZE = 3000
 # if a csv row has all(or some) of these fields equal, we will increase its idrank
 EXPORT_COUNTER_KEY_FIELDS = ['Date', 'Email Address', 'Sender', 'Subject']
 
