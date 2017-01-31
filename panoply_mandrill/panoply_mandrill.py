@@ -24,7 +24,7 @@ SLEEP_TIME_SECONDS = 20
 COPY_CHUNK_SIZE = 16 * 1024
 CSV_FILE_NAME = "activity.csv"
 EXTRACTED_FIELDS_BATCH_SIZE = 50
-EXPORT_BATCH_SIZE = 1000
+EXPORT_BATCH_SIZE = 3000
 # if a csv row has all(or some) of these fields equal, we will increase its idrank
 EXPORT_COUNTER_KEY_FIELDS = ['Date', 'Email Address', 'Sender', 'Subject']
 
@@ -99,7 +99,10 @@ class PanoplyMandrill(panoply.DataSource):
 
     @reportProgress
     def read(self, n = None):
+        self.log('Inside Mandrill')
         if len(self.metrics) == 0:
+            self.log('Everything has been sent, finished processing')
+            self.log('Outside Mandrill')
             return None # No more data to consume
         metric = self.metrics[0]
 
@@ -121,6 +124,7 @@ class PanoplyMandrill(panoply.DataSource):
         # only pop when we are not in an ongoingJob
         if not self.ongoingJob:
             self.metrics.pop(0)
+        self.log('Outside Mandrill')
         return result
     
     def getFn(self, metric, path=None):
