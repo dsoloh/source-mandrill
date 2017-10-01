@@ -11,8 +11,8 @@ setup(
     install_requires=[
         "requests==2.3.0",
         "panoply-python-sdk",
-        "mock==1.0.1",
         "csvsort==1.3",
+        "mock==1.0.1",
         "mandrill==1.0.57"
     ],
     packages=["panoply.panoply_mandrill"]
