@@ -30,11 +30,13 @@ EXPORT_BATCH_SIZE = 1000
 # we will increase its idrank
 EXPORT_COUNTER_KEY_FIELDS = ['Date', 'Email Address', 'Sender', 'Subject']
 
+
 def mergeDicts(x, y):
     '''Given two dicts, merge them into a new dict as a shallow copy.'''
     z = x.copy()
     z.update(y)
     return z
+
 
 def reportProgress(fn):
     '''decorator for auto progress report'''
@@ -47,8 +49,10 @@ def reportProgress(fn):
         return result
     return wrapper
 
+
 def formatTime(struct_time, format="%Y-%m-%d"):
     return time.strftime(format, struct_time)
+
 
 class PanoplyMandrill(panoply.DataSource):
 
@@ -99,21 +103,22 @@ class PanoplyMandrill(panoply.DataSource):
             if field in row:
                 key += row[field].decode('utf-8')
             key += '-'
-        key = key[:-1] # remove the last '-'
+        key = key[:-1]  # remove the last '-'
         return key
 
     @reportProgress
-    def read(self, n = None):
+    def read(self, n=None):
         self.log('Inside Mandrill')
         if len(self.metrics) == 0:
             self.log('Everything has been sent, finished processing')
             self.log('Outside Mandrill')
-            return None # No more data to consume
+            return None  # No more data to consume
         metric = self.metrics[0]
 
         # choose the right handler for this metric
         required_field = metric.get("required")
-        handler = lambda: None
+
+        def handler(): None
         if self.ongoingJob:
             handler = self.handleOngoing
         elif required_field:
@@ -229,7 +234,7 @@ class PanoplyMandrill(panoply.DataSource):
                 return job_status.get('result_url')
             status = job_status.get('status')
             if (status == 'error' or status == 'expired'):
-                self.log('WARN: export job status was:', status);
+                self.log('WARN: export job status was:', status)
                 return False
             self.log('waiting for export job to finish')
             time.sleep(SLEEP_TIME_SECONDS)
@@ -256,10 +261,11 @@ class PanoplyMandrill(panoply.DataSource):
                                tmp_csv_file, COPY_CHUNK_SIZE)
             zf.close()
 
-            csvsort(tmp_csv_file.name, [0], max_size=50,
-                    delimiter=',', quoting=csv.QUOTE_ALL)
             # rewind the tempfile object back to start
             tmp_csv_file.seek(0)
+            csvsort(tmp_csv_file.name, [0], max_size=50,
+                    delimiter=',', quoting=csv.QUOTE_ALL)
+
             # put the extracted file inside the memory StringIO
             output = StringIO.StringIO()
             shutil.copyfileobj(tmp_csv_file, output, COPY_CHUNK_SIZE)
