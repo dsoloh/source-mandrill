@@ -31,7 +31,7 @@ EXPORT_BATCH_SIZE = 1000
 EXPORT_COUNTER_KEY_FIELDS = ['Date', 'Email Address', 'Sender', 'Subject']
 
 def mergeDicts(x, y):
-    '''Given two dicts, merge them into a new dict as a shallow copy.'''
+    '''Given two dicts, merge them into a new dict as a shallow copy'''
     z = x.copy()
     z.update(y)
     return z
