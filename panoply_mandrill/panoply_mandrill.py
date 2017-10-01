@@ -11,9 +11,9 @@ import StringIO
 from datetime import datetime
 from functools import partial, wraps
 from itertools import chain
-from collections import defaultdict
 from mandrill import Mandrill, InvalidKeyError
 from urllib2 import urlopen
+from csvsort import csvsort
 
 MINUTE = 60
 HOUR = 60 * MINUTE
@@ -26,7 +26,8 @@ COPY_CHUNK_SIZE = 16 * 1024
 CSV_FILE_NAME = "activity.csv"
 EXTRACTED_FIELDS_BATCH_SIZE = 50
 EXPORT_BATCH_SIZE = 1000
-# if a csv row has all(or some) of these fields equal, we will increase its idrank
+# if a csv row has all(or some) of these fields equal,
+# we will increase its idrank
 EXPORT_COUNTER_KEY_FIELDS = ['Date', 'Email Address', 'Sender', 'Subject']
 
 def mergeDicts(x, y):
@@ -47,7 +48,7 @@ def reportProgress(fn):
     return wrapper
 
 def formatTime(struct_time, format="%Y-%m-%d"):
-    return time.strftime(format, struct_time) 
+    return time.strftime(format, struct_time)
 
 class PanoplyMandrill(panoply.DataSource):
 
@@ -58,8 +59,11 @@ class PanoplyMandrill(panoply.DataSource):
         source["idpattern"] = source.get("idpattern") or IDPATTERN
 
         fromsec = int(time.time() - (DAY_RANGE * DAY))
-        # disabled since we always need 30 days back with the AllowDuplicates method
-        #self.fromTime = self.getLastTimeSucceed(source) or formatTime(time.gmtime(fromsec))
+        '''
+        disabled since we always need 30 days back with the AllowDuplicates
+        method self.fromTime = self.getLastTimeSucceed(source)
+        or formatTime(time.gmtime(fromsec))
+        '''
         self.fromTime = formatTime(time.gmtime(fromsec))
         self.toTime = formatTime(time.gmtime())
         self.metrics = copy.deepcopy(conf.metrics)
@@ -121,13 +125,14 @@ class PanoplyMandrill(panoply.DataSource):
 
         result = handler()
         # add type and key to each row
-        result = [dict(type=metric["name"], key=self.key, **row) for row in result]
+        result = [dict(type=metric["name"],
+                  key=self.key, **row) for row in result]
         # only pop when we are not in an ongoingJob
         if not self.ongoingJob:
             self.metrics.pop(0)
         self.log('Outside Mandrill')
         return result
-    
+
     def getFn(self, metric, path=None):
         '''dynamically locate the right function to call from the sdk.'''
         # will find the right category in the sdk for example:
@@ -140,7 +145,7 @@ class PanoplyMandrill(panoply.DataSource):
         if metric.get('includeTimeframe'):
             fn = partial(fn, date_from=self.fromTime, date_to=self.toTime)
         return fn
-    
+
     def setOngoingJob(self, data):
         self.ongoingJob = data
 
@@ -150,7 +155,8 @@ class PanoplyMandrill(panoply.DataSource):
     def processExtracted(self, data):
         '''process and return the extracted_fields given'''
         metric = data.get('metric')
-        extracted_fields = data.get('extracted_fields', [])[:EXTRACTED_FIELDS_BATCH_SIZE]
+        fields = data.get('extracted_fields', [])
+        extracted_fields = fields[:EXTRACTED_FIELDS_BATCH_SIZE]
         required_field = data.get('required_field')
         # if finished the extracted_fields we can stop this ongoing job
         if (len(extracted_fields) == 0):
@@ -158,19 +164,22 @@ class PanoplyMandrill(panoply.DataSource):
             return []
         fn = self.getFn(metric)
         results = []
-        # for each field we have (for example each email we got from the list call)
-        # do an api call on that field
-        # for example mandrill_client.senders.time_series(address='someUnique@email.com')
+        # for each field we have
+        # (for example each email we got from the list call)
+        # do an api call on that field. for example
+        # mandrill_client.senders.time_series(address='someUnique@email.com')
         for field in extracted_fields:
             # dynamically choose the paramater to send to the function
             param_dict = {required_field: field}
-            # the response from the api call contains an array, we need to add some info
-            # on each of the result objects inside this array
-            # the info is the param dict itself (for example adding address: 'blabla@a.a')
-            result = [mergeDicts(param_dict, response_obj) for response_obj in fn(**param_dict)]
+            # the response from the api call contains an array,
+            # we need to add some info on each of the result
+            # objects inside this array. the info is the param dict itself
+            # (for example adding address: 'blabla@a.a')
+            result = [mergeDicts(param_dict, response_obj)
+                      for response_obj in fn(**param_dict)]
             results.append(result)
         # reduce the batch for the next callable
-        data['extracted_fields'] = data.get('extracted_fields', [])[EXTRACTED_FIELDS_BATCH_SIZE:]
+        data['extracted_fields'] = fields[EXTRACTED_FIELDS_BATCH_SIZE:]
         self.setOngoingJob(data)
         # flatten the results (which are a list of lists) into flat list
         return list(chain.from_iterable(results))
@@ -179,12 +188,13 @@ class PanoplyMandrill(panoply.DataSource):
         '''will handle a job that is working in batches'''
         fn = self.ongoingJob.get('function')
         return fn(self.ongoingJob)
-        
+
     def handleRequired(self, metric, required_field):
-        '''for metrics that would need an extra api call before they can work.'''
+        # for metrics that would need an extra api call before they can work.
         list_fn = self.getFn(metric, 'list')
         # extract only the required field from each object in the result array
-        extracted_fields = [row.get(required_field) for row in list_fn() if row.get(required_field)]
+        extracted_fields = [row.get(required_field)
+                            for row in list_fn() if row.get(required_field)]
         data = {
             'metric': metric,
             'extracted_fields': extracted_fields,
@@ -195,7 +205,7 @@ class PanoplyMandrill(panoply.DataSource):
         self.setOngoingJob(data)
         # return the 1st batch
         return self.processExtracted(data)
-    
+
     def handleRegular(self, metric):
         '''for your everyday metric.'''
         return self.getFn(metric)()
@@ -213,7 +223,8 @@ class PanoplyMandrill(panoply.DataSource):
             Report progress is expecting self to be the first param.
             Will return the url on success or False on fail
             '''
-            job_status = self.mandrill_client.exports.info(id=job_info.get('id'))
+            client_exports = self.mandrill_client.exports
+            job_status = client_exports.info(id=job_info.get('id'))
             if (job_status.get('result_url')):
                 return job_status.get('result_url')
             status = job_status.get('status')
@@ -226,39 +237,51 @@ class PanoplyMandrill(panoply.DataSource):
         while url is None:
             url = wait_for_job(self)
         # check that we didn't fail
-        if url == False:
+        if url is False:
             return []
-        
+
         # now we have the url to download from
         self.log('starting to download from:', url)
         req = urlopen(url)
+
         results = []
-        # count how many times we have seen the given row
-        already_seen_map = defaultdict(lambda: 1)
         tmp_file = tempfile.NamedTemporaryFile(delete=True)
+        tmp_csv_file = tempfile.NamedTemporaryFile(delete=True)
         try:
             shutil.copyfileobj(req, tmp_file, COPY_CHUNK_SIZE)
-            self.log('download has finished size:', os.path.getsize(tmp_file.name))
+            self.log('download has finished size:',
+                     os.path.getsize(tmp_file.name))
             zf = zipfile.ZipFile(tmp_file)
+            shutil.copyfileobj(zf.open(CSV_FILE_NAME),
+                               tmp_csv_file, COPY_CHUNK_SIZE)
+            zf.close()
+
+            csvsort(tmp_csv_file.name, [0], max_size=50,
+                    delimiter=',', quoting=csv.QUOTE_ALL)
+            # rewind the tempfile object back to start
+            tmp_csv_file.seek(0)
             # put the extracted file inside the memory StringIO
             output = StringIO.StringIO()
-            shutil.copyfileobj(zf.open(CSV_FILE_NAME), output, COPY_CHUNK_SIZE)
-            zf.close()
+            shutil.copyfileobj(tmp_csv_file, output, COPY_CHUNK_SIZE)
+
             # rewind the file-like memory object back to start
             output.seek(0)
             csv_reader = csv.DictReader(output, delimiter=',')
+
             self.log('zipfile has been retrieved')
         except Exception, e:
             raise e
         finally:
             tmp_file.close()
-        
+            tmp_csv_file.close()
+
         # stagger the results so the writer can handle them
         # and for limiting our memory usage
         data = {
             'metric': metric,
             'csv_reader': csv_reader,
-            'already_seen_map': already_seen_map,
+            'last_key': None,
+            'key_count': 0,
             'function': self.staggerExport
         }
         # will periodically return part of the result set
@@ -273,15 +296,23 @@ class PanoplyMandrill(panoply.DataSource):
         '''
         batch_number = data.get('batch_number', 0)
         csv_reader = data.get('csv_reader')
-        already_seen_map = data.get('already_seen_map')
         results = []
         try:
             for i in xrange(EXPORT_BATCH_SIZE):
                 row = csv_reader.next()
                 key = self.generateExportKey(row)
+                '''
+                count how many times we have seen the given row.
+                the data is sorted hench all identical rows are next to
+                each other.
+                '''
+                data['key_count'] += 1
+                if data['last_key'] != key:
+                    data['last_key'] = key
+                    data['key_count'] = 1
+
                 # final id form is the generated key + '-' + idrank
-                row['id'] = key + '-' + str(already_seen_map[key])
-                already_seen_map[key] += 1
+                row['id'] = key + '-' + str(data['key_count'])
                 results.append(row)
         # if finished we can stop this ongoing job
         except StopIteration:
@@ -292,4 +323,5 @@ class PanoplyMandrill(panoply.DataSource):
         data['batch_number'] = batch_number + 1
         self.setOngoingJob(data)
         self.log('sending export batch #%d' % batch_number)
+
         return results
