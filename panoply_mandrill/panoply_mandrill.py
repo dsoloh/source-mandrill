@@ -63,11 +63,11 @@ class PanoplyMandrill(panoply.DataSource):
         source["idpattern"] = source.get("idpattern") or IDPATTERN
 
         fromsec = int(time.time() - (DAY_RANGE * DAY))
-        '''
-        disabled since we always need 30 days back with the AllowDuplicates
-        method self.fromTime = self.getLastTimeSucceed(source)
-        or formatTime(time.gmtime(fromsec))
-        '''
+
+        # disabled since we always need 30 days back with the AllowDuplicates
+        # method self.fromTime = self.getLastTimeSucceed(source)
+        #                        or formatTime(time.gmtime(fromsec))
+
         self.fromTime = formatTime(time.gmtime(fromsec))
         self.toTime = formatTime(time.gmtime())
         self.metrics = copy.deepcopy(conf.metrics)
@@ -195,7 +195,10 @@ class PanoplyMandrill(panoply.DataSource):
         return fn(self.ongoingJob)
 
     def handleRequired(self, metric, required_field):
-        # for metrics that would need an extra api call before they can work.
+        '''
+        for metrics that would need an extra api
+        call before they can work.
+        '''
         list_fn = self.getFn(metric, 'list')
         # extract only the required field from each object in the result array
         extracted_fields = [row.get(required_field)
