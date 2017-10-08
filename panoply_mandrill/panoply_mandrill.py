@@ -13,7 +13,6 @@ from functools import partial, wraps
 from itertools import chain
 from mandrill import Mandrill, InvalidKeyError
 from urllib2 import urlopen
-from csvsort import csvsort
 
 MINUTE = 60
 HOUR = 60 * MINUTE
@@ -29,6 +28,18 @@ EXPORT_BATCH_SIZE = 1000
 # if a csv row has all(or some) of these fields equal,
 # we will increase its idrank
 EXPORT_COUNTER_KEY_FIELDS = ['Date', 'Email Address', 'Sender', 'Subject']
+
+
+def csvFileSort(file):
+    '''
+    when importing csvsort package a folder name .csvsort.XXX
+    is created immediately. after sorting the folder is deleted.
+    beacuse _init_.py import PanoplyMandrill.py without sorting unnecessary
+    folders will be created if the import was outside this function.
+    '''
+    from csvsort import csvsort
+    csvsort(file.name, [0], max_size=50,
+            delimiter=',', quoting=csv.QUOTE_ALL)
 
 
 def mergeDicts(x, y):
@@ -266,8 +277,7 @@ class PanoplyMandrill(panoply.DataSource):
 
             # rewind the tempfile object back to start
             tmp_csv_file.seek(0)
-            csvsort(tmp_csv_file.name, [0], max_size=50,
-                    delimiter=',', quoting=csv.QUOTE_ALL)
+            csvFileSort(tmp_csv_file)
 
             # put the extracted file inside the memory StringIO
             output = StringIO.StringIO()
