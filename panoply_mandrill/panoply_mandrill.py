@@ -34,7 +34,7 @@ def csvFileSort(file):
     '''
     when importing csvsort package a folder name .csvsort.XXX
     is created immediately. after sorting the folder is deleted.
-    beacuse _init_.py import PanoplyMandrill.py without sorting unnecessary
+    since _init_.py import PanoplyMandrill.py without sorting, unnecessary
     folders will be created if the import was outside this function.
     '''
     from csvsort import csvsort
