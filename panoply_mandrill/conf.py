@@ -19,12 +19,6 @@ metrics = [
     },
 
     {
-        "name": "urls",
-        "path": "time_series",
-        "required": "url",
-    },
-
-    {
         "name": "templates",
         "path": "time_series",
         "required": "name",
