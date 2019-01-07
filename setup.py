@@ -4,13 +4,13 @@ setup(
     name="panoply_mandrill",
     version="2.0.0",
     description="Panoply Data Source for Mandrill API",
-    author="Kfir Gez, Oshri Bienhaker",
-    author_email="kfir@panoply.io, oshri@panoply.io",
+    author="Panoply Dev Team",
+    author_email="support@panoply.io",
     url="http://panoply.io",
     package_dir={"panoply": ""},
     install_requires=[
-        "requests==2.3.0",
-        "panoply-python-sdk",
+        "requests==2.21.0",
+        "panoply-python-sdk==1.6.0",
         "csvsort==1.3",
         "mandrill==1.0.57"
     ],

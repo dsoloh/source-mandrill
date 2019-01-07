@@ -6,29 +6,24 @@ metrics = [
         "path": "search_time_series",
         "includeTimeframe": True
     },
-
     {
         "name": "tags",
         "path": "all_time_series"
     },
-
     {
         "name": "senders",
         "path": "time_series",
         "required": "address",
     },
-
     {
         "name": "templates",
         "path": "time_series",
         "required": "name",
     },
-
     {
         "name": "webhooks",
         "path": "list"
     },
-
     {
         "name": "subaccounts",
         "path": "list"
