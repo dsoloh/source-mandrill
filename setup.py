@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name="panoply_mandrill",
-    version="2.0.0",
+    version="2.1.0",
     description="Panoply Data Source for Mandrill API",
     author="Panoply Dev Team",
     author_email="support@panoply.io",
