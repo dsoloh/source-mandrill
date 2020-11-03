@@ -1,4 +1,6 @@
-FROM legacy-source-wrapper:latest
+ARG BASE_IMG 
+
+FROM ${BASE_IMG}
 
 ENV RUNTIME "PYTHON2"
 ENV SOURCE_TYPE "panoply_mandrill"
