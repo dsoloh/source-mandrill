@@ -5,7 +5,7 @@ token = os.environ.get("GITAUTH", "")
 
 setup(
     name="panoply_mandrill",
-    version="2.1.1",
+    version="2.1.2",
     description="Panoply Data Source for Mandrill API",
     author="Panoply Dev Team",
     author_email="support@panoply.io",
